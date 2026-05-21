@@ -597,9 +597,28 @@ export function createApiFetchHandler(config: ApiConfig): (request: Request) => 
 
   return async function fetchHandler(request: Request): Promise<Response> {
     try {
+      const url = new URL(request.url);
+
+      if (url.pathname === "/health") {
+        if (request.method !== "GET") {
+          return errorResponse(405, "BAD_INPUT", "Method not allowed. Use GET.");
+        }
+
+        return Response.json(
+          {
+            status: "ok",
+          },
+          {
+            status: 200,
+            headers: {
+              "content-type": "application/json; charset=utf-8",
+            },
+          },
+        );
+      }
+
       requireBearerApiKey(request, expectedApiKey);
 
-      const url = new URL(request.url);
       if (request.method !== "POST") {
         if (
           url.pathname === "/html-to-mjml" ||

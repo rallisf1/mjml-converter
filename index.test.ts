@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 
 import { describe, expect, test } from "bun:test";
 
@@ -7,8 +7,39 @@ import { createApiFetchHandler, type MjmlAstNode, type NotifuseMjmlNode } from "
 const API_KEY = "test-key";
 const handler = createApiFetchHandler({ apiKey: API_KEY });
 
-const notifuseSample = JSON.parse(
-  readFileSync(new URL("./mjml-sample.json", import.meta.url), "utf8"),
+const notifuseSamplePath = new URL("./mjml-sample.json", import.meta.url);
+const notifuseSample = (
+  existsSync(notifuseSamplePath)
+    ? JSON.parse(readFileSync(notifuseSamplePath, "utf8"))
+    : {
+        id: "mjml-1",
+        type: "mjml",
+        children: [
+          {
+            id: "mj-body-1",
+            type: "mj-body",
+            children: [
+              {
+                id: "mj-section-1",
+                type: "mj-section",
+                children: [
+                  {
+                    id: "mj-column-1",
+                    type: "mj-column",
+                    children: [
+                      {
+                        id: "mj-text-1",
+                        type: "mj-text",
+                        content: "Fallback Notifuse sample",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      }
 ) as NotifuseMjmlNode;
 
 interface RequestOptions {
@@ -133,6 +164,24 @@ describe("auth", () => {
 
     expect(response.status).toBe(403);
     expect(await readErrorCode(response)).toBe("FORBIDDEN");
+  });
+});
+
+describe("health", () => {
+  test("returns 200 without authentication", async () => {
+    const response = await hit("/health", { method: "GET" });
+    const body = (await response.json()) as { status?: string };
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")?.startsWith("application/json")).toBe(true);
+    expect(body.status).toBe("ok");
+  });
+
+  test("returns 405 for non-GET methods", async () => {
+    const response = await hit("/health", { method: "POST" });
+
+    expect(response.status).toBe(405);
+    expect(await readErrorCode(response)).toBe("BAD_INPUT");
   });
 });
 
