@@ -1,0 +1,27 @@
+{
+  "name": "mjml-converter",
+  "module": "index.ts",
+  "type": "module",
+	"version": "1.0.0",
+  "private": true,
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/rallisf1/mjml-converter.git"
+	},
+	"author": {
+		"name": "John Rallis"
+	},
+	"license": "MIT",
+  "dependencies": {
+    "mjml": "^5.2.2",
+    "mjml-parser-xml": "^5.2.2",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/mjml": "^5.0.0"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
