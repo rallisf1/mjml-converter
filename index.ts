@@ -1,3 +1,5 @@
+import { JSDOM } from "jsdom";
+import { htmlToMjml } from "html-to-mjml";
 import mjml2html from "mjml";
 import mjmlParserLib from "mjml-parser-xml";
 import { z } from "zod";
@@ -312,6 +314,115 @@ function mjmlAstToNotifuseJson(ast: MjmlAstNode): NotifuseMjmlNode {
   return internalAstToNotifuseNode(ast, new Map<string, number>());
 }
 
+const outlookConditionalStartPattern = /<!--\s*\[if\s+(?:!?\s*mso\b|(?:lt|lte|gt|gte)\s+mso\b|mso\s*\|\s*ie\b|ie\b)/i;
+const conditionalEndPattern = /<!--\s*<!\[endif\]\s*-->/i;
+const presentationOnlyAttributeKeys = new Set([
+  "style",
+  "class",
+  "role",
+  "lang",
+  "dir",
+  "align",
+  "width",
+  "height",
+  "border",
+  "cellpadding",
+  "cellspacing",
+  "max-width",
+  "maxWidth",
+  "margin",
+  "padding",
+  "font-size",
+  "fontSize",
+  "vertical-align",
+  "verticalAlign",
+  "bgcolor",
+  "xmlns",
+  "xmlns:v",
+  "xmlns:o",
+  "aria-roledescription",
+  "ariaRoledescription",
+]);
+
+function isOutlookConditionalRawContent(content: string | undefined): boolean {
+  if (!content) {
+    return false;
+  }
+
+  return outlookConditionalStartPattern.test(content) || conditionalEndPattern.test(content);
+}
+
+function hasMeaningfulAttributes(attributes: MjmlAstNode["attributes"]): boolean {
+  if (!attributes) {
+    return false;
+  }
+
+  for (const [key, value] of Object.entries(attributes)) {
+    if (value === undefined || value === null || String(value).trim() === "") {
+      continue;
+    }
+
+    if (!presentationOnlyAttributeKeys.has(key)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function shouldPruneEmptyNode(node: MjmlAstNode, normalizedChildren: MjmlAstNode[]): boolean {
+  const hasChildren = normalizedChildren.length > 0;
+  if (hasChildren) {
+    return false;
+  }
+
+  const hasContent = (node.content ?? "").trim().length > 0;
+  if (hasContent) {
+    return false;
+  }
+
+  return !hasMeaningfulAttributes(node.attributes);
+}
+
+function cleanOutlookRawAndPruneNode(
+  node: MjmlAstNode,
+  isRoot: boolean,
+  parentTagName: string | null,
+): MjmlAstNode | null {
+  if (node.tagName === "mj-raw" && isOutlookConditionalRawContent(node.content)) {
+    return null;
+  }
+
+  if (parentTagName === "mj-head" && node.tagName === "mj-text") {
+    return null;
+  }
+
+  const cleanedChildren = (node.children ?? [])
+    .map((child) => cleanOutlookRawAndPruneNode(child, false, node.tagName))
+    .filter((child): child is MjmlAstNode => child !== null);
+
+  const normalizedNode: MjmlAstNode = {
+    tagName: node.tagName,
+    ...(node.attributes ? { attributes: node.attributes } : {}),
+    ...(node.content === undefined ? {} : { content: node.content }),
+    ...(cleanedChildren.length > 0 ? { children: cleanedChildren } : {}),
+  };
+
+  if (!isRoot && shouldPruneEmptyNode(normalizedNode, cleanedChildren)) {
+    return null;
+  }
+
+  return normalizedNode;
+}
+
+function removeOutlookRawAndPrune(ast: MjmlAstNode): MjmlAstNode {
+  const cleaned = cleanOutlookRawAndPruneNode(ast, true, null);
+  if (!cleaned) {
+    return ast;
+  }
+  return cleaned;
+}
+
 async function readTextBody(request: Request): Promise<string> {
   const body = await request.text();
   if (!body.trim()) {
@@ -435,27 +546,35 @@ function mjmlAstToXml(ast: MjmlAstNode): string {
   return renderMjmlNode(ast);
 }
 
+function ensureHtmlToMjmlRuntimeGlobals(): void {
+  const globalWithNode = globalThis as { Node?: unknown };
+  if (globalWithNode.Node !== undefined) {
+    return;
+  }
+
+  // html-to-mjml expects global Node constants in server runtimes.
+  globalWithNode.Node = new JSDOM("").window.Node;
+}
+
 function htmlToMjmlXml(html: string): string {
   const trimmed = html.trim();
   if (!trimmed) {
     throw new ApiError(400, "BAD_INPUT", "HTML body must not be empty.");
   }
 
-  if (trimmed.toLowerCase().includes("</mj-raw>")) {
-    throw new ApiError(400, "BAD_INPUT", "HTML body cannot contain '</mj-raw>'.");
-  }
+  ensureHtmlToMjmlRuntimeGlobals();
 
-  return [
-    "<mjml>",
-    "  <mj-body>",
-    "    <mj-section>",
-    "      <mj-column>",
-    `        <mj-raw>${trimmed}</mj-raw>`,
-    "      </mj-column>",
-    "    </mj-section>",
-    "  </mj-body>",
-    "</mjml>",
-  ].join("\n");
+  try {
+    return htmlToMjml(trimmed, {
+      validateOutput: false,
+      inlineStyles: true,
+      wrapContent: true,
+      showWarnings: true,
+      preserveClassNames: false,
+    });
+  } catch {
+    throw new ApiError(400, "BAD_INPUT", "HTML to MJML conversion failed.");
+  }
 }
 
 async function mjmlToHtml(input: { xml?: string; ast?: MjmlAstNode }): Promise<MjmlToHtmlResult> {
@@ -504,12 +623,12 @@ async function handleHtmlToMjml(request: Request): Promise<Response> {
 
   const html = await readTextBody(request);
   const mjmlXml = htmlToMjmlXml(html);
+  const ast = removeOutlookRawAndPrune(parseMjmlXml(mjmlXml));
 
   if (accept === "application/xml") {
-    return textResponse(mjmlXml, "application/xml");
+    return textResponse(mjmlAstToXml(ast), "application/xml");
   }
 
-  const ast = parseMjmlXml(mjmlXml);
   return Response.json(mjmlAstToNotifuseJson(ast), {
     status: 200,
     headers: {

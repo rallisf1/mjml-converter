@@ -82,6 +82,35 @@ function findFirstType(node: NotifuseMjmlNode, type: string): NotifuseMjmlNode |
   return null;
 }
 
+function collectRawContents(node: NotifuseMjmlNode, contents: string[] = []): string[] {
+  if (node.type === "mj-raw" && typeof node.content === "string") {
+    contents.push(node.content);
+  }
+
+  for (const child of node.children ?? []) {
+    collectRawContents(child, contents);
+  }
+
+  return contents;
+}
+
+function collectHeadTextNodes(node: NotifuseMjmlNode, inHead = false, nodes: NotifuseMjmlNode[] = []): NotifuseMjmlNode[] {
+  const currentlyInHead = inHead || node.type === "mj-head";
+  if (currentlyInHead && node.type === "mj-text") {
+    nodes.push(node);
+  }
+
+  for (const child of node.children ?? []) {
+    collectHeadTextNodes(child, currentlyInHead, nodes);
+  }
+
+  return nodes;
+}
+
+function hasOutlookConditionalSnippet(value: string): boolean {
+  return /if\s+(?:!?\s*mso|(?:lt|lte|gt|gte)\s+mso|mso\s*\|\s*ie|ie)|<!\[endif\]/i.test(value);
+}
+
 const validMjmlXml =
   "<mjml><mj-body><mj-section><mj-column><mj-text>Hello</mj-text></mj-column></mj-section></mj-body></mjml>";
 
@@ -270,6 +299,20 @@ describe("input validation", () => {
     expect(await readErrorCode(response)).toBe("BAD_INPUT");
   });
 
+  test("returns 400 for HTML input that does not convert to a valid MJML root", async () => {
+    const response = await hit("/html-to-mjml", {
+      headers: {
+        authorization: `Bearer ${API_KEY}`,
+        "content-type": "text/html",
+        accept: "application/xml",
+      },
+      body: "<mjml><mj-body><mj-section><mj-column><mj-text>Hi</mj-text></mj-column></mj-section></mj-body></mjml>",
+    });
+
+    expect(response.status).toBe(400);
+    expect(await readErrorCode(response)).toBe("BAD_INPUT");
+  });
+
   test("returns 400 for invalid legacy MJML AST shape", async () => {
     const response = await hit("/mjml-to-mjml", {
       headers: {
@@ -363,8 +406,14 @@ describe("success paths", () => {
 
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")?.startsWith("application/xml")).toBe(true);
-    expect(body).toContain("<mjml>");
-    expect(body).toContain("<mj-raw>");
+    expect(body).toContain("<mjml");
+    expect(body).toContain("mj-section");
+    expect(body).toContain("Hello");
+    expect(body).not.toContain("<mj-raw>");
+    expect(body).not.toContain("X-UA-Compatible");
+    expect(body).not.toContain("Content-Type");
+    expect(body).not.toContain("viewport");
+    expect(hasOutlookConditionalSnippet(body)).toBe(false);
   });
 
   test("html-to-mjml returns Notifuse JSON when Accept is application/json", async () => {
@@ -387,8 +436,57 @@ describe("success paths", () => {
 
     const bodyNode = findFirstType(body, "mj-body");
     const sectionNode = findFirstType(body, "mj-section");
+    const textNode = findFirstType(body, "mj-text");
+    const rawContents = collectRawContents(body);
+    const headTextNodes = collectHeadTextNodes(body);
     expect(bodyNode?.id).toBe("mj-body-1");
     expect(sectionNode?.id).toBe("mj-section-1");
+    expect(textNode !== null || (sectionNode?.content ?? "").includes("Hello")).toBe(true);
+    expect(headTextNodes).toHaveLength(0);
+    expect(JSON.stringify(body)).not.toContain("\"httpEquiv\"");
+    expect(JSON.stringify(body)).not.toContain("\"viewport\"");
+    expect(rawContents.some(hasOutlookConditionalSnippet)).toBe(false);
+  });
+
+  test("html-to-mjml strips Outlook raw blocks from converted email HTML", async () => {
+    const htmlResponse = await hit("/mjml-to-html", {
+      headers: {
+        authorization: `Bearer ${API_KEY}`,
+        "content-type": "application/xml",
+        accept: "text/html",
+      },
+      body: validMjmlXml,
+    });
+    const renderedHtml = await htmlResponse.text();
+
+    const xmlResponse = await hit("/html-to-mjml", {
+      headers: {
+        authorization: `Bearer ${API_KEY}`,
+        "content-type": "text/html",
+        accept: "application/xml",
+      },
+      body: renderedHtml,
+    });
+    const cleanedXml = await xmlResponse.text();
+
+    const jsonResponse = await hit("/html-to-mjml", {
+      headers: {
+        authorization: `Bearer ${API_KEY}`,
+        "content-type": "text/html",
+        accept: "application/json",
+      },
+      body: renderedHtml,
+    });
+    const cleanedJson = (await jsonResponse.json()) as NotifuseMjmlNode;
+
+    expect(xmlResponse.status).toBe(200);
+    expect(jsonResponse.status).toBe(200);
+    expect(cleanedXml).not.toContain("X-UA-Compatible");
+    expect(cleanedXml).not.toContain("Content-Type");
+    expect(cleanedXml).not.toContain("viewport");
+    expect(hasOutlookConditionalSnippet(cleanedXml)).toBe(false);
+    expect(collectHeadTextNodes(cleanedJson)).toHaveLength(0);
+    expect(collectRawContents(cleanedJson).some(hasOutlookConditionalSnippet)).toBe(false);
   });
 
   test("mjml-to-html accepts XML input and returns HTML", async () => {

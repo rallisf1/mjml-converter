@@ -2,7 +2,7 @@
   "name": "mjml-converter",
   "module": "index.ts",
   "type": "module",
-	"version": "1.0.0",
+	"version": "1.0.1",
   "private": true,
 	"repository": {
 		"type": "git",
@@ -13,12 +13,15 @@
 	},
 	"license": "MIT",
   "dependencies": {
+    "html-to-mjml": "^1.0.0",
+    "jsdom": "^26.1.0",
     "mjml": "^5.2.2",
     "mjml-parser-xml": "^5.2.2",
     "zod": "^4.1.5"
   },
   "devDependencies": {
     "@types/bun": "latest",
+    "@types/jsdom": "^21.1.7",
     "@types/mjml": "^5.0.0"
   },
   "peerDependencies": {
