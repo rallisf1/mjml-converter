@@ -179,6 +179,43 @@ const notifuseAiSupportedTypes = (() => {
 
   return new Set(componentTypes.filter((value): value is string => typeof value === "string"));
 })();
+const notifuseAiAllowedAttributesByType = (() => {
+  const parsed = JSON.parse(readFileSync(notifuseAiSchemaPath, "utf8")) as {
+    allOf?: Array<{
+      if?: { properties?: { type?: { const?: unknown } } };
+      then?: { properties?: { attributes?: { properties?: Record<string, unknown> } } };
+    }>;
+  };
+
+  const map = new Map<string, Set<string>>();
+  for (const rule of parsed.allOf ?? []) {
+    const tagName = rule.if?.properties?.type?.const;
+    const attributeObject = rule.then?.properties?.attributes?.properties;
+    if (typeof tagName !== "string" || !attributeObject || typeof attributeObject !== "object") {
+      continue;
+    }
+
+    map.set(tagName, new Set(Object.keys(attributeObject)));
+  }
+
+  return map;
+})();
+const notifuseAiAllowedChildrenByParent = new Map<string, Set<string>>([
+  ["mjml", new Set(["mj-head", "mj-body"])],
+  ["mj-body", new Set(["mj-wrapper", "mj-section", "mj-raw"])],
+  ["mj-wrapper", new Set(["mj-section", "mj-raw"])],
+  ["mj-section", new Set(["mj-column", "mj-group", "mj-raw"])],
+  ["mj-group", new Set(["mj-column"])],
+  ["mj-column", new Set(["mj-text", "mj-button", "mj-image", "mj-divider", "mj-spacer", "mj-social", "mj-raw"])],
+  ["mj-social", new Set(["mj-social-element"])],
+  [
+    "mj-head",
+    new Set(["mj-attributes", "mj-breakpoint", "mj-font", "mj-html-attributes", "mj-preview", "mj-style", "mj-title", "mj-raw"]),
+  ],
+]);
+const notifuseAiLeafTypes = new Set(["mj-text", "mj-button", "mj-image", "mj-divider", "mj-spacer", "mj-raw", "mj-social-element"]);
+const sampleHtmlPath = new URL("./sample-input.html", import.meta.url);
+const sampleHtml = existsSync(sampleHtmlPath) ? readFileSync(sampleHtmlPath, "utf8") : null;
 
 function collectTypes(node: NotifuseMjmlNode, acc: Set<string> = new Set<string>()): Set<string> {
   acc.add(node.type);
@@ -193,6 +230,51 @@ function assertTreeUsesNotifuseAiSupportedTypes(node: NotifuseMjmlNode): void {
   for (const type of seenTypes) {
     expect(notifuseAiSupportedTypes.has(type)).toBe(true);
   }
+}
+
+function assertTreeUsesAllowedChildren(node: NotifuseMjmlNode): void {
+  for (const child of node.children ?? []) {
+    const allowed = notifuseAiAllowedChildrenByParent.get(node.type);
+    if (allowed) {
+      expect(allowed.has(child.type)).toBe(true);
+    }
+    assertTreeUsesAllowedChildren(child);
+  }
+}
+
+function assertLeafTypesDoNotContainMjmlChildren(node: NotifuseMjmlNode): void {
+  if (notifuseAiLeafTypes.has(node.type)) {
+    expect((node.children ?? []).length).toBe(0);
+  }
+
+  for (const child of node.children ?? []) {
+    assertLeafTypesDoNotContainMjmlChildren(child);
+  }
+}
+
+function toKebabCaseKey(key: string): string {
+  return key
+    .replace(/_/g, "-")
+    .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+    .toLowerCase();
+}
+
+function assertAttributesComplyWithAiSchema(node: NotifuseMjmlNode): void {
+  const allowed = notifuseAiAllowedAttributesByType.get(node.type) ?? new Set<string>();
+  for (const key of Object.keys(node.attributes ?? {})) {
+    expect(allowed.has(toKebabCaseKey(key))).toBe(true);
+  }
+
+  for (const child of node.children ?? []) {
+    assertAttributesComplyWithAiSchema(child);
+  }
+}
+
+function assertNotifuseAiCompatibility(node: NotifuseMjmlNode): void {
+  assertTreeUsesNotifuseAiSupportedTypes(node);
+  assertTreeUsesAllowedChildren(node);
+  assertLeafTypesDoNotContainMjmlChildren(node);
+  assertAttributesComplyWithAiSchema(node);
 }
 
 describe("auth", () => {
@@ -474,7 +556,7 @@ describe("success paths", () => {
     expect(JSON.stringify(body)).not.toContain("\"httpEquiv\"");
     expect(JSON.stringify(body)).not.toContain("\"viewport\"");
     expect(rawContents.some(hasOutlookConditionalSnippet)).toBe(false);
-    assertTreeUsesNotifuseAiSupportedTypes(body);
+    assertNotifuseAiCompatibility(body);
   });
 
   test("html-to-mjml rewrites table HTML into supported section/column blocks", async () => {
@@ -496,7 +578,7 @@ describe("success paths", () => {
     expect(findFirstType(body, "mj-column")).not.toBeNull();
     expect(serialized).toContain("Hello");
     expect(serialized).toContain("World");
-    assertTreeUsesNotifuseAiSupportedTypes(body);
+    assertNotifuseAiCompatibility(body);
   });
 
   test("html-to-mjml XML output for table HTML does not contain mj-table", async () => {
@@ -558,7 +640,38 @@ describe("success paths", () => {
     expect(hasOutlookConditionalSnippet(cleanedXml)).toBe(false);
     expect(collectHeadTextNodes(cleanedJson)).toHaveLength(0);
     expect(collectRawContents(cleanedJson).some(hasOutlookConditionalSnippet)).toBe(false);
-    assertTreeUsesNotifuseAiSupportedTypes(cleanedJson);
+    assertNotifuseAiCompatibility(cleanedJson);
+  });
+
+  test("html-to-mjml fixture output is structurally valid for Notifuse AI schema", async () => {
+    if (!sampleHtml) {
+      return;
+    }
+
+    const jsonResponse = await hit("/html-to-mjml", {
+      headers: {
+        authorization: `Bearer ${API_KEY}`,
+        "content-type": "text/html",
+        accept: "application/json",
+      },
+      body: sampleHtml,
+    });
+    const xmlResponse = await hit("/html-to-mjml", {
+      headers: {
+        authorization: `Bearer ${API_KEY}`,
+        "content-type": "text/html",
+        accept: "application/xml",
+      },
+      body: sampleHtml,
+    });
+
+    const jsonBody = (await jsonResponse.json()) as NotifuseMjmlNode;
+    const xmlBody = await xmlResponse.text();
+
+    expect(jsonResponse.status).toBe(200);
+    expect(xmlResponse.status).toBe(200);
+    assertNotifuseAiCompatibility(jsonBody);
+    expect(xmlBody).not.toContain("<mj-table");
   });
 
   test("mjml-to-html accepts XML input and returns HTML", async () => {

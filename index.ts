@@ -346,33 +346,84 @@ type NotifuseAiSchemaFile = {
       enum?: unknown;
     };
   };
+  allOf?: unknown;
 };
 
-function loadNotifuseAiSupportedTypes(): Set<string> {
+type NotifuseAiSchemaRule = {
+  if?: {
+    properties?: {
+      type?: {
+        const?: unknown;
+      };
+    };
+  };
+  then?: {
+    properties?: {
+      attributes?: {
+        properties?: Record<string, unknown>;
+      };
+    };
+  };
+};
+
+function loadNotifuseAiSchemaFile(): NotifuseAiSchemaFile | null {
   try {
     const schemaPath = new URL("./mjml_schema/mjml-components-schema-ai.json", import.meta.url);
-    const schema = JSON.parse(readFileSync(schemaPath, "utf8")) as NotifuseAiSchemaFile;
-    const componentTypes = schema.properties?.type?.enum;
-    if (Array.isArray(componentTypes) && componentTypes.every((value) => typeof value === "string")) {
-      return new Set(componentTypes);
-    }
+    return JSON.parse(readFileSync(schemaPath, "utf8")) as NotifuseAiSchemaFile;
   } catch {
     // Fallback to baked-in defaults when schema file is not available.
+    return null;
+  }
+}
+
+function resolveNotifuseAiSupportedTypes(schema: NotifuseAiSchemaFile | null): Set<string> {
+  const componentTypes = schema?.properties?.type?.enum;
+  if (Array.isArray(componentTypes) && componentTypes.every((value) => typeof value === "string")) {
+    return new Set(componentTypes);
   }
 
   return new Set(defaultNotifuseAiSupportedTypes);
 }
 
-const notifuseAiSupportedTypes = loadNotifuseAiSupportedTypes();
-const notifuseAiContentTypes = new Set([
+function resolveNotifuseAiAllowedAttributesByType(schema: NotifuseAiSchemaFile | null): Map<string, Set<string>> {
+  const allowedByType = new Map<string, Set<string>>();
+  const rules = schema?.allOf;
+  if (!Array.isArray(rules)) {
+    return allowedByType;
+  }
+
+  for (const ruleUnknown of rules) {
+    const rule = ruleUnknown as NotifuseAiSchemaRule;
+    const tagName = rule.if?.properties?.type?.const;
+    const attributes = rule.then?.properties?.attributes?.properties;
+    if (typeof tagName !== "string" || !attributes || typeof attributes !== "object") {
+      continue;
+    }
+
+    allowedByType.set(
+      tagName,
+      new Set(
+        Object.keys(attributes).map((key) => toKebabCaseKey(key)),
+      ),
+    );
+  }
+
+  return allowedByType;
+}
+
+const notifuseAiSchemaFile = loadNotifuseAiSchemaFile();
+const notifuseAiSupportedTypes = resolveNotifuseAiSupportedTypes(notifuseAiSchemaFile);
+const notifuseAiAllowedAttributesByType = resolveNotifuseAiAllowedAttributesByType(notifuseAiSchemaFile);
+const notifuseAiLeafTypes = new Set([
   "mj-text",
   "mj-button",
   "mj-image",
   "mj-divider",
   "mj-spacer",
-  "mj-social",
   "mj-raw",
+  "mj-social-element",
 ]);
+const notifuseAiColumnContentTypes = new Set(["mj-text", "mj-button", "mj-image", "mj-divider", "mj-spacer", "mj-social", "mj-raw"]);
 const notifuseAiAllowedChildrenByParent = new Map<string, Set<string>>([
   ["mjml", new Set(["mj-head", "mj-body"])],
   ["mj-body", new Set(["mj-wrapper", "mj-section", "mj-raw"])],
@@ -522,6 +573,39 @@ function hasAnyNonEmptyAttribute(attributes?: MjmlAstNode["attributes"]): boolea
   return false;
 }
 
+function sanitizeAttributesForNotifuseType(
+  tagName: string,
+  attributes?: MjmlAstNode["attributes"],
+): MjmlAstNode["attributes"] | undefined {
+  if (!attributes) {
+    return undefined;
+  }
+
+  const allowedAttributeKeys = notifuseAiAllowedAttributesByType.get(tagName);
+  if (!allowedAttributeKeys || allowedAttributeKeys.size === 0) {
+    return undefined;
+  }
+
+  const sanitized: Record<string, AttributeValue | undefined> = {};
+  for (const [rawKey, value] of Object.entries(attributes)) {
+    if (value === undefined || value === null || String(value).trim() === "") {
+      continue;
+    }
+
+    const normalizedKey = toKebabCaseKey(rawKey);
+    if (!allowedAttributeKeys.has(normalizedKey)) {
+      continue;
+    }
+    sanitized[normalizedKey] = value;
+  }
+
+  if (Object.keys(sanitized).length === 0) {
+    return undefined;
+  }
+
+  return sanitized;
+}
+
 function isRedundantNestedTextWrapper(node: MjmlAstNode, normalizedChildren: MjmlAstNode[]): boolean {
   if (node.tagName !== "mj-text") {
     return false;
@@ -572,9 +656,49 @@ function collectContentNodesForNotifuse(nodes: MjmlAstNode[]): MjmlAstNode[] {
   const contentNodes: MjmlAstNode[] = [];
 
   const visit = (node: MjmlAstNode): void => {
-    if (notifuseAiContentTypes.has(node.tagName)) {
-      contentNodes.push(node);
+    const sanitizedAttributes = sanitizeAttributesForNotifuseType(node.tagName, node.attributes);
+    const hasOwnContent = (node.content ?? "").trim().length > 0;
+
+    if (node.tagName === "mj-social") {
+      const socialChildren = (node.children ?? []).filter((child) => child.tagName === "mj-social-element");
+      if (socialChildren.length > 0) {
+        contentNodes.push({
+          tagName: "mj-social",
+          ...(sanitizedAttributes ? { attributes: sanitizedAttributes } : {}),
+          children: socialChildren.map((child) => {
+            const socialElementAttributes = sanitizeAttributesForNotifuseType("mj-social-element", child.attributes);
+            return {
+              tagName: "mj-social-element",
+              ...(socialElementAttributes ? { attributes: socialElementAttributes } : {}),
+              ...(child.content === undefined ? {} : { content: child.content }),
+            };
+          }),
+        });
+      }
       return;
+    }
+
+    if (notifuseAiColumnContentTypes.has(node.tagName)) {
+      const hasOwnAttributes = hasAnyNonEmptyAttribute(sanitizedAttributes);
+      if (hasOwnContent || hasOwnAttributes) {
+        contentNodes.push({
+          tagName: node.tagName,
+          ...(sanitizedAttributes ? { attributes: sanitizedAttributes } : {}),
+          ...(node.content === undefined ? {} : { content: node.content }),
+        });
+      }
+
+      for (const child of node.children ?? []) {
+        visit(child);
+      }
+      return;
+    }
+
+    if (hasOwnContent) {
+      contentNodes.push({
+        tagName: "mj-text",
+        content: node.content,
+      });
     }
 
     for (const child of node.children ?? []) {
@@ -667,6 +791,19 @@ function rewriteUnsupportedNodeToSupportedLayout(
   return wrapContentNodesForParent(parentTagName, contentNodes, node.attributes);
 }
 
+function normalizeLeafNodeChildrenForParent(
+  node: MjmlAstNode,
+  normalizedChildren: MjmlAstNode[],
+  parentTagName: string | null,
+): MjmlAstNode[] {
+  if (normalizedChildren.length === 0) {
+    return [];
+  }
+
+  const contentNodes = collectContentNodesForNotifuse(normalizedChildren);
+  return wrapContentNodesForParent(parentTagName, contentNodes, node.attributes);
+}
+
 function normalizeAstNodeForNotifuseHtmlImport(
   node: MjmlAstNode,
   parentTagName: string | null,
@@ -680,24 +817,40 @@ function normalizeAstNodeForNotifuseHtmlImport(
     return normalizedChildren;
   }
 
+  const sanitizedAttributes = sanitizeAttributesForNotifuseType(node.tagName, node.attributes);
+  const normalizedNode: MjmlAstNode = {
+    tagName: node.tagName,
+    ...(sanitizedAttributes ? { attributes: sanitizedAttributes } : {}),
+    ...(node.content === undefined ? {} : { content: node.content }),
+  };
+
   const isSupportedType = notifuseAiSupportedTypes.has(node.tagName);
   const isAllowedByParent = parentTagName === null ? true : isAllowedNotifuseAiChild(parentTagName, node.tagName);
   if (!isSupportedType || !isAllowedByParent) {
     return rewriteUnsupportedNodeToSupportedLayout(node, normalizedChildren, parentTagName);
   }
 
-  const normalizedNode: MjmlAstNode = {
-    tagName: node.tagName,
-    ...(node.attributes ? { attributes: node.attributes } : {}),
-    ...(node.content === undefined ? {} : { content: node.content }),
+  if (notifuseAiLeafTypes.has(node.tagName)) {
+    const relocatedChildren = normalizeLeafNodeChildrenForParent(node, normalizedChildren, parentTagName);
+    const keepLeafNode =
+      (node.content ?? "").trim().length > 0 || hasAnyNonEmptyAttribute(sanitizedAttributes);
+    if (!keepLeafNode) {
+      return relocatedChildren;
+    }
+
+    return [normalizedNode, ...relocatedChildren];
+  }
+
+  const mergedNode: MjmlAstNode = {
+    ...normalizedNode,
     ...(normalizedChildren.length > 0 ? { children: normalizedChildren } : {}),
   };
 
-  if (!isRoot && shouldPruneEmptyNode(normalizedNode, normalizedChildren)) {
+  if (!isRoot && shouldPruneEmptyNode(mergedNode, normalizedChildren)) {
     return [];
   }
 
-  return [normalizedNode];
+  return [mergedNode];
 }
 
 function normalizeHtmlImportAstForNotifuseCompatibility(ast: MjmlAstNode): MjmlAstNode {
