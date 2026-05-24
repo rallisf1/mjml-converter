@@ -94,6 +94,33 @@ function collectRawContents(node: NotifuseMjmlNode, contents: string[] = []): st
   return contents;
 }
 
+function collectEmptyTextNodes(node: NotifuseMjmlNode, matches: NotifuseMjmlNode[] = []): NotifuseMjmlNode[] {
+  if (node.type === "mj-text" && (node.content ?? "").trim().length === 0) {
+    matches.push(node);
+  }
+
+  for (const child of node.children ?? []) {
+    collectEmptyTextNodes(child, matches);
+  }
+
+  return matches;
+}
+
+function collectSpacerHeights(node: NotifuseMjmlNode, heights: string[] = []): string[] {
+  if (node.type === "mj-spacer") {
+    const height = node.attributes?.height;
+    if (typeof height === "string") {
+      heights.push(height);
+    }
+  }
+
+  for (const child of node.children ?? []) {
+    collectSpacerHeights(child, heights);
+  }
+
+  return heights;
+}
+
 function collectHeadTextNodes(node: NotifuseMjmlNode, inHead = false, nodes: NotifuseMjmlNode[] = []): NotifuseMjmlNode[] {
   const currentlyInHead = inHead || node.type === "mj-head";
   if (currentlyInHead && node.type === "mj-text") {
@@ -672,6 +699,11 @@ describe("success paths", () => {
     expect(xmlResponse.status).toBe(200);
     assertNotifuseAiCompatibility(jsonBody);
     expect(xmlBody).not.toContain("<mj-table");
+    expect(collectEmptyTextNodes(jsonBody)).toHaveLength(0);
+    expect(xmlBody).not.toMatch(/<mj-text\b[^>]*\/>/i);
+    const spacerHeights = collectSpacerHeights(jsonBody);
+    expect(spacerHeights.length).toBeGreaterThan(0);
+    expect(spacerHeights.some((height) => height === "20px" || height === "40px")).toBe(true);
   });
 
   test("mjml-to-html accepts XML input and returns HTML", async () => {

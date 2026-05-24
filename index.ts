@@ -573,6 +573,54 @@ function hasAnyNonEmptyAttribute(attributes?: MjmlAstNode["attributes"]): boolea
   return false;
 }
 
+function parsePxValue(value: AttributeValue | undefined): number {
+  if (typeof value === "number") {
+    return value > 0 ? value : 0;
+  }
+
+  if (typeof value !== "string") {
+    return 0;
+  }
+
+  const match = value.trim().match(/^(\d+(?:\.\d+)?)px$/i);
+  if (!match) {
+    return 0;
+  }
+
+  const parsed = Number(match[1]);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return 0;
+  }
+
+  return parsed;
+}
+
+function formatPxValue(value: number): string {
+  return Number.isInteger(value) ? `${value}px` : `${value}px`;
+}
+
+function buildCombinedSpacerFromTextAttributes(
+  attributes?: MjmlAstNode["attributes"],
+): MjmlAstNode | null {
+  if (!attributes) {
+    return null;
+  }
+
+  const paddingTop = parsePxValue(attributes["padding-top"]);
+  const paddingBottom = parsePxValue(attributes["padding-bottom"]);
+  const total = paddingTop + paddingBottom;
+  if (total <= 0) {
+    return null;
+  }
+
+  return {
+    tagName: "mj-spacer",
+    attributes: {
+      height: formatPxValue(total),
+    },
+  };
+}
+
 function sanitizeAttributesForNotifuseType(
   tagName: string,
   attributes?: MjmlAstNode["attributes"],
@@ -680,7 +728,8 @@ function collectContentNodesForNotifuse(nodes: MjmlAstNode[]): MjmlAstNode[] {
 
     if (notifuseAiColumnContentTypes.has(node.tagName)) {
       const hasOwnAttributes = hasAnyNonEmptyAttribute(sanitizedAttributes);
-      if (hasOwnContent || hasOwnAttributes) {
+      const keepAsContentNode = node.tagName === "mj-text" ? hasOwnContent : hasOwnContent || hasOwnAttributes;
+      if (keepAsContentNode) {
         contentNodes.push({
           tagName: node.tagName,
           ...(sanitizedAttributes ? { attributes: sanitizedAttributes } : {}),
@@ -832,6 +881,11 @@ function normalizeAstNodeForNotifuseHtmlImport(
 
   if (notifuseAiLeafTypes.has(node.tagName)) {
     const relocatedChildren = normalizeLeafNodeChildrenForParent(node, normalizedChildren, parentTagName);
+    if (node.tagName === "mj-text" && (node.content ?? "").trim().length === 0) {
+      const spacerNode = buildCombinedSpacerFromTextAttributes(sanitizedAttributes);
+      return [...(spacerNode ? [spacerNode] : []), ...relocatedChildren];
+    }
+
     const keepLeafNode =
       (node.content ?? "").trim().length > 0 || hasAnyNonEmptyAttribute(sanitizedAttributes);
     if (!keepLeafNode) {

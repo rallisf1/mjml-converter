@@ -1,52 +1,18 @@
-<mjml lang="und" dir="auto" xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
-    <mj-body background-color="#f7f9fc" style="word-spacing:normal;background-color:#f7f9fc;">
-        <mj-section background-color="#f7f9fc" aria-roledescription="email" role="article" lang="und" dir="auto" style="background-color:#f7f9fc;">
+<mjml lang="und" dir="auto">
+    <mj-body background-color="#f7f9fc">
+        <mj-section background-color="#f7f9fc">
             <mj-column width="100%">
-                <mj-text border-radius="0px" border-top="none" border-right="none" border-bottom="none" border-left="none" direction="ltr" font-size="0px" padding="20px 0" padding-left="0px" padding-right="0px" padding-bottom="20px" padding-top="20px" align="center" style="border-radius:0px;border-top:none;border-right:none;border-bottom:none;border-left:none;direction:ltr;font-size:0px;padding:20px 0;padding-left:0px;padding-right:0px;padding-bottom:20px;padding-top:20px;text-align:center;">
-                    <mj-column font-size="0px" align="left" direction="ltr" vertical-align="top" width="100%" class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-                        <mj-text background-color="transparent" border-radius="0px" border-top="none" border-right="none" border-bottom="none" border-left="none" vertical-align="top" padding-top="0px" padding-right="0px" padding-bottom="0px" padding-left="0px" style="background-color:transparent;border-radius:0px;border-top:none;border-right:none;border-bottom:none;border-left:none;vertical-align:top;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px;">
-                            <mj-section background-color="transparent">
-                                <mj-column width="100%">
-                                    <mj-text font-size="0px" background="transparent" padding-top="0px" padding-right="0px" padding-bottom="0px" padding-left="0px" style="font-size:0px;word-break:break-word;background:transparent;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px;">
-                                        <mj-section height="20px" line-height="20px" style="height:20px;line-height:20px;" />
-                                    </mj-text>
-                                    <mj-text font-size="0px" padding="10px 25px" background="transparent" padding-top="10px" padding-right="25px" padding-bottom="10px" padding-left="25px" align="center" style="font-size:0px;padding:10px 25px;word-break:break-word;background:transparent;padding-top:10px;padding-right:25px;padding-bottom:10px;padding-left:25px;">
-                                        <mj-section>
-                                            <mj-column>
-                                                <mj-text width="150px" style="width:150px;">
-                                                    <mj-text href="https://www.stolon.gr" rel="noopener noreferrer" target="_blank">
-                                                        <mj-image border="none" text-decoration="none" height="auto" width="150" font-size="13px" border-radius="0px" src="https://www.stolon.gr/logo-light.png" alt="" />
-                                                    </mj-text>
-                                                </mj-text>
-                                            </mj-column>
-                                        </mj-section>
-                                    </mj-text>
-                                </mj-column>
-                            </mj-section>
-                        </mj-text>
-                    </mj-column>
-                </mj-text>
+                <mj-text font-size="0px" padding-left="0px" padding-right="0px" padding-bottom="20px" padding-top="20px" align="center" />
+                <mj-text background-color="transparent" vertical-align="top" padding-top="0px" padding-right="0px" padding-bottom="0px" padding-left="0px" />
+                <mj-text font-size="0px" padding-top="0px" padding-right="0px" padding-bottom="0px" padding-left="0px" />
+                <mj-text font-size="0px" padding-top="10px" padding-right="25px" padding-bottom="10px" padding-left="25px" align="center" />
+                <mj-image height="auto" width="150" font-size="13px" border-radius="0px" src="https://www.stolon.gr/logo-light.png" />
             </mj-column>
             <mj-column>
-                <mj-text border-radius="10px" direction="ltr" font-size="0px" padding="20px 0" padding-bottom="0px" padding-left="0px" padding-right="0px" padding-top="0px" align="center" style="border-radius:10px;direction:ltr;font-size:0px;padding:20px 0;padding-bottom:0px;padding-left:0px;padding-right:0px;padding-top:0px;text-align:center;">
-                    <mj-section background-color="transparent">
-                        <mj-column width="100%">
-                            <mj-text border-radius="0px" border-top="none" border-right="none" border-bottom="none" border-left="none" direction="ltr" font-size="0px" padding="20px 0" padding-left="0px" padding-right="0px" padding-bottom="20px" padding-top="20px" align="center" style="border-radius:0px;border-top:none;border-right:none;border-bottom:none;border-left:none;direction:ltr;font-size:0px;padding:20px 0;padding-left:0px;padding-right:0px;padding-bottom:20px;padding-top:20px;text-align:center;">
-                                <mj-column font-size="0px" align="left" direction="ltr" vertical-align="top" width="100%" class="mj-column-per-100 mj-outlook-group-fix" style="font-size:0px;text-align:left;direction:ltr;display:inline-block;vertical-align:top;width:100%;">
-                                    <mj-text background-color="transparent" border-radius="0px" border-top="none" border-right="none" border-bottom="none" border-left="none" vertical-align="top" padding-top="0px" padding-right="0px" padding-bottom="0px" padding-left="0px" style="background-color:transparent;border-radius:0px;border-top:none;border-right:none;border-bottom:none;border-left:none;vertical-align:top;padding-top:0px;padding-right:0px;padding-bottom:0px;padding-left:0px;">
-                                        <mj-section background-color="transparent">
-                                            <mj-column width="100%">
-                                                <mj-text font-size="0px" padding="10px 25px" padding-top="10px" padding-bottom="10px" padding-left="25px" padding-right="25px" align="left" style="font-size:0px;padding:10px 25px;padding-top:10px;padding-bottom:10px;padding-left:25px;padding-right:25px;word-break:break-word;">
-                                                    <mj-section font-family="Arial, sans-serif" font-size="16px" font-weight="normal" line-height="1.6" align="left" text-transform="none" color="#333333" font-style="normal" text-decoration="none" style="font-family:Arial, sans-serif;font-size:16px;font-weight:normal;line-height:1.6;text-align:left;text-transform:none;color:#333333;font-style:normal;text-decoration:none;" />
-                                                </mj-text>
-                                            </mj-column>
-                                        </mj-section>
-                                    </mj-text>
-                                </mj-column>
-                            </mj-text>
-                        </mj-column>
-                    </mj-section>
-                </mj-text>
+                <mj-text font-size="0px" padding-bottom="0px" padding-left="0px" padding-right="0px" padding-top="0px" align="center" />
+                <mj-text font-size="0px" padding-left="0px" padding-right="0px" padding-bottom="20px" padding-top="20px" align="center" />
+                <mj-text background-color="transparent" vertical-align="top" padding-top="0px" padding-right="0px" padding-bottom="0px" padding-left="0px" />
+                <mj-text font-size="0px" padding-top="10px" padding-bottom="10px" padding-left="25px" padding-right="25px" align="left" />
             </mj-column>
         </mj-section>
     </mj-body>
