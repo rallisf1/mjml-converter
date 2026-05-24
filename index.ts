@@ -1,5 +1,6 @@
 import { JSDOM } from "jsdom";
 import { htmlToMjml } from "html-to-mjml";
+import { readFileSync } from "node:fs";
 import mjml2html from "mjml";
 import mjmlParserLib from "mjml-parser-xml";
 import { z } from "zod";
@@ -314,6 +315,78 @@ function mjmlAstToNotifuseJson(ast: MjmlAstNode): NotifuseMjmlNode {
   return internalAstToNotifuseNode(ast, new Map<string, number>());
 }
 
+const defaultNotifuseAiSupportedTypes = [
+  "mj-body",
+  "mj-button",
+  "mj-column",
+  "mj-divider",
+  "mj-group",
+  "mj-image",
+  "mj-raw",
+  "mj-section",
+  "mj-social",
+  "mj-social-element",
+  "mj-spacer",
+  "mj-text",
+  "mj-wrapper",
+  "mj-head",
+  "mj-attributes",
+  "mj-breakpoint",
+  "mj-font",
+  "mj-html-attributes",
+  "mj-preview",
+  "mj-style",
+  "mj-title",
+  "mjml",
+] as const;
+
+type NotifuseAiSchemaFile = {
+  properties?: {
+    type?: {
+      enum?: unknown;
+    };
+  };
+};
+
+function loadNotifuseAiSupportedTypes(): Set<string> {
+  try {
+    const schemaPath = new URL("./mjml_schema/mjml-components-schema-ai.json", import.meta.url);
+    const schema = JSON.parse(readFileSync(schemaPath, "utf8")) as NotifuseAiSchemaFile;
+    const componentTypes = schema.properties?.type?.enum;
+    if (Array.isArray(componentTypes) && componentTypes.every((value) => typeof value === "string")) {
+      return new Set(componentTypes);
+    }
+  } catch {
+    // Fallback to baked-in defaults when schema file is not available.
+  }
+
+  return new Set(defaultNotifuseAiSupportedTypes);
+}
+
+const notifuseAiSupportedTypes = loadNotifuseAiSupportedTypes();
+const notifuseAiContentTypes = new Set([
+  "mj-text",
+  "mj-button",
+  "mj-image",
+  "mj-divider",
+  "mj-spacer",
+  "mj-social",
+  "mj-raw",
+]);
+const notifuseAiAllowedChildrenByParent = new Map<string, Set<string>>([
+  ["mjml", new Set(["mj-head", "mj-body"])],
+  ["mj-body", new Set(["mj-wrapper", "mj-section", "mj-raw"])],
+  ["mj-wrapper", new Set(["mj-section", "mj-raw"])],
+  ["mj-section", new Set(["mj-column", "mj-group", "mj-raw"])],
+  ["mj-group", new Set(["mj-column"])],
+  ["mj-column", new Set(["mj-text", "mj-button", "mj-image", "mj-divider", "mj-spacer", "mj-social", "mj-raw"])],
+  ["mj-social", new Set(["mj-social-element"])],
+  [
+    "mj-head",
+    new Set(["mj-attributes", "mj-breakpoint", "mj-font", "mj-html-attributes", "mj-preview", "mj-style", "mj-title", "mj-raw"]),
+  ],
+]);
+
 const outlookConditionalStartPattern = /<!--\s*\[if\s+(?:!?\s*mso\b|(?:lt|lte|gt|gte)\s+mso\b|mso\s*\|\s*ie\b|ie\b)/i;
 const conditionalEndPattern = /<!--\s*<!\[endif\]\s*-->/i;
 const presentationOnlyAttributeKeys = new Set([
@@ -421,6 +494,220 @@ function removeOutlookRawAndPrune(ast: MjmlAstNode): MjmlAstNode {
     return ast;
   }
   return cleaned;
+}
+
+function isAllowedNotifuseAiChild(parentTagName: string, childTagName: string): boolean {
+  const allowedChildren = notifuseAiAllowedChildrenByParent.get(parentTagName);
+  if (!allowedChildren) {
+    return true;
+  }
+
+  return allowedChildren.has(childTagName);
+}
+
+function hasAnyNonEmptyAttribute(attributes?: MjmlAstNode["attributes"]): boolean {
+  if (!attributes) {
+    return false;
+  }
+
+  for (const value of Object.values(attributes)) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+    if (String(value).trim() !== "") {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function isRedundantNestedTextWrapper(node: MjmlAstNode, normalizedChildren: MjmlAstNode[]): boolean {
+  if (node.tagName !== "mj-text") {
+    return false;
+  }
+
+  if (normalizedChildren.length === 0) {
+    return false;
+  }
+
+  if ((node.content ?? "").trim().length > 0) {
+    return false;
+  }
+
+  return !hasAnyNonEmptyAttribute(node.attributes);
+}
+
+function normalizeTableAttributesForSection(attributes?: MjmlAstNode["attributes"]): MjmlAstNode["attributes"] | undefined {
+  if (!attributes) {
+    return undefined;
+  }
+
+  const backgroundColor = attributes["background-color"] ?? attributes["backgroundColor"];
+  if (backgroundColor === undefined || backgroundColor === null || String(backgroundColor).trim() === "") {
+    return undefined;
+  }
+
+  return {
+    "background-color": backgroundColor,
+  };
+}
+
+function normalizeTableAttributesForColumn(attributes?: MjmlAstNode["attributes"]): MjmlAstNode["attributes"] | undefined {
+  if (!attributes) {
+    return undefined;
+  }
+
+  const width = attributes.width;
+  if (width === undefined || width === null || String(width).trim() === "") {
+    return undefined;
+  }
+
+  return {
+    width,
+  };
+}
+
+function collectContentNodesForNotifuse(nodes: MjmlAstNode[]): MjmlAstNode[] {
+  const contentNodes: MjmlAstNode[] = [];
+
+  const visit = (node: MjmlAstNode): void => {
+    if (notifuseAiContentTypes.has(node.tagName)) {
+      contentNodes.push(node);
+      return;
+    }
+
+    for (const child of node.children ?? []) {
+      visit(child);
+    }
+  };
+
+  for (const node of nodes) {
+    visit(node);
+  }
+
+  return contentNodes;
+}
+
+function wrapContentNodesForParent(
+  parentTagName: string | null,
+  contentNodes: MjmlAstNode[],
+  sourceAttributes?: MjmlAstNode["attributes"],
+): MjmlAstNode[] {
+  if (contentNodes.length === 0) {
+    return [];
+  }
+
+  if (parentTagName === "mj-column") {
+    return contentNodes;
+  }
+
+  if (parentTagName === "mj-section" || parentTagName === "mj-group") {
+    const columnAttributes = normalizeTableAttributesForColumn(sourceAttributes);
+    return [
+      {
+        tagName: "mj-column",
+        ...(columnAttributes ? { attributes: columnAttributes } : {}),
+        children: contentNodes,
+      },
+    ];
+  }
+
+  if (parentTagName === "mjml") {
+    return [
+      {
+        tagName: "mj-body",
+        children: [
+          {
+            tagName: "mj-section",
+            children: [
+              {
+                tagName: "mj-column",
+                children: contentNodes,
+              },
+            ],
+          },
+        ],
+      },
+    ];
+  }
+
+  const sectionAttributes = normalizeTableAttributesForSection(sourceAttributes);
+  const columnAttributes = normalizeTableAttributesForColumn(sourceAttributes);
+
+  return [
+    {
+      tagName: "mj-section",
+      ...(sectionAttributes ? { attributes: sectionAttributes } : {}),
+      children: [
+        {
+          tagName: "mj-column",
+          ...(columnAttributes ? { attributes: columnAttributes } : {}),
+          children: contentNodes,
+        },
+      ],
+    },
+  ];
+}
+
+function rewriteUnsupportedNodeToSupportedLayout(
+  node: MjmlAstNode,
+  normalizedChildren: MjmlAstNode[],
+  parentTagName: string | null,
+): MjmlAstNode[] {
+  const contentNodes = collectContentNodesForNotifuse(normalizedChildren);
+  const ownContent = (node.content ?? "").trim();
+  if (ownContent.length > 0) {
+    contentNodes.unshift({
+      tagName: "mj-text",
+      content: node.content,
+    });
+  }
+
+  return wrapContentNodesForParent(parentTagName, contentNodes, node.attributes);
+}
+
+function normalizeAstNodeForNotifuseHtmlImport(
+  node: MjmlAstNode,
+  parentTagName: string | null,
+  isRoot: boolean,
+): MjmlAstNode[] {
+  const normalizedChildren = (node.children ?? []).flatMap((child) =>
+    normalizeAstNodeForNotifuseHtmlImport(child, node.tagName, false),
+  );
+
+  if (isRedundantNestedTextWrapper(node, normalizedChildren)) {
+    return normalizedChildren;
+  }
+
+  const isSupportedType = notifuseAiSupportedTypes.has(node.tagName);
+  const isAllowedByParent = parentTagName === null ? true : isAllowedNotifuseAiChild(parentTagName, node.tagName);
+  if (!isSupportedType || !isAllowedByParent) {
+    return rewriteUnsupportedNodeToSupportedLayout(node, normalizedChildren, parentTagName);
+  }
+
+  const normalizedNode: MjmlAstNode = {
+    tagName: node.tagName,
+    ...(node.attributes ? { attributes: node.attributes } : {}),
+    ...(node.content === undefined ? {} : { content: node.content }),
+    ...(normalizedChildren.length > 0 ? { children: normalizedChildren } : {}),
+  };
+
+  if (!isRoot && shouldPruneEmptyNode(normalizedNode, normalizedChildren)) {
+    return [];
+  }
+
+  return [normalizedNode];
+}
+
+function normalizeHtmlImportAstForNotifuseCompatibility(ast: MjmlAstNode): MjmlAstNode {
+  const normalized = normalizeAstNodeForNotifuseHtmlImport(ast, null, true);
+  const root = normalized[0];
+  if (!root || root.tagName !== "mjml") {
+    throw new ApiError(400, "BAD_INPUT", "HTML conversion did not produce a valid MJML root.");
+  }
+
+  return root;
 }
 
 async function readTextBody(request: Request): Promise<string> {
@@ -623,7 +910,8 @@ async function handleHtmlToMjml(request: Request): Promise<Response> {
 
   const html = await readTextBody(request);
   const mjmlXml = htmlToMjmlXml(html);
-  const ast = removeOutlookRawAndPrune(parseMjmlXml(mjmlXml));
+  const cleanedAst = removeOutlookRawAndPrune(parseMjmlXml(mjmlXml));
+  const ast = normalizeHtmlImportAstForNotifuseCompatibility(cleanedAst);
 
   if (accept === "application/xml") {
     return textResponse(mjmlAstToXml(ast), "application/xml");

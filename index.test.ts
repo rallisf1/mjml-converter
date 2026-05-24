@@ -167,6 +167,34 @@ const validNotifuseJson: NotifuseMjmlNode = {
   ],
 };
 
+const notifuseAiSchemaPath = new URL("./mjml_schema/mjml-components-schema-ai.json", import.meta.url);
+const notifuseAiSupportedTypes = (() => {
+  const parsed = JSON.parse(readFileSync(notifuseAiSchemaPath, "utf8")) as {
+    properties?: { type?: { enum?: unknown } };
+  };
+  const componentTypes = parsed.properties?.type?.enum;
+  if (!Array.isArray(componentTypes)) {
+    return new Set<string>();
+  }
+
+  return new Set(componentTypes.filter((value): value is string => typeof value === "string"));
+})();
+
+function collectTypes(node: NotifuseMjmlNode, acc: Set<string> = new Set<string>()): Set<string> {
+  acc.add(node.type);
+  for (const child of node.children ?? []) {
+    collectTypes(child, acc);
+  }
+  return acc;
+}
+
+function assertTreeUsesNotifuseAiSupportedTypes(node: NotifuseMjmlNode): void {
+  const seenTypes = collectTypes(node);
+  for (const type of seenTypes) {
+    expect(notifuseAiSupportedTypes.has(type)).toBe(true);
+  }
+}
+
 describe("auth", () => {
   test("returns 403 when Authorization header is missing", async () => {
     const response = await hit("/html-to-mjml", {
@@ -446,6 +474,49 @@ describe("success paths", () => {
     expect(JSON.stringify(body)).not.toContain("\"httpEquiv\"");
     expect(JSON.stringify(body)).not.toContain("\"viewport\"");
     expect(rawContents.some(hasOutlookConditionalSnippet)).toBe(false);
+    assertTreeUsesNotifuseAiSupportedTypes(body);
+  });
+
+  test("html-to-mjml rewrites table HTML into supported section/column blocks", async () => {
+    const response = await hit("/html-to-mjml", {
+      headers: {
+        authorization: `Bearer ${API_KEY}`,
+        "content-type": "text/html",
+        accept: "application/json",
+      },
+      body: "<table role=\"presentation\" width=\"100%\"><tr><td><h1>Hello</h1><p>World</p></td></tr></table>",
+    });
+
+    const body = (await response.json()) as NotifuseMjmlNode;
+    const serialized = JSON.stringify(body);
+
+    expect(response.status).toBe(200);
+    expect(findFirstType(body, "mj-table")).toBeNull();
+    expect(findFirstType(body, "mj-section")).not.toBeNull();
+    expect(findFirstType(body, "mj-column")).not.toBeNull();
+    expect(serialized).toContain("Hello");
+    expect(serialized).toContain("World");
+    assertTreeUsesNotifuseAiSupportedTypes(body);
+  });
+
+  test("html-to-mjml XML output for table HTML does not contain mj-table", async () => {
+    const response = await hit("/html-to-mjml", {
+      headers: {
+        authorization: `Bearer ${API_KEY}`,
+        "content-type": "text/html",
+        accept: "application/xml",
+      },
+      body: "<table role=\"presentation\" width=\"100%\"><tr><td><h1>Hello</h1><p>World</p></td></tr></table>",
+    });
+
+    const body = await response.text();
+
+    expect(response.status).toBe(200);
+    expect(body).not.toContain("<mj-table");
+    expect(body).toContain("<mj-section");
+    expect(body).toContain("<mj-column");
+    expect(body).toContain("Hello");
+    expect(body).toContain("World");
   });
 
   test("html-to-mjml strips Outlook raw blocks from converted email HTML", async () => {
@@ -487,6 +558,7 @@ describe("success paths", () => {
     expect(hasOutlookConditionalSnippet(cleanedXml)).toBe(false);
     expect(collectHeadTextNodes(cleanedJson)).toHaveLength(0);
     expect(collectRawContents(cleanedJson).some(hasOutlookConditionalSnippet)).toBe(false);
+    assertTreeUsesNotifuseAiSupportedTypes(cleanedJson);
   });
 
   test("mjml-to-html accepts XML input and returns HTML", async () => {

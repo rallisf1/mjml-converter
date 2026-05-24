@@ -1,0 +1,1950 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://notifuse.com/schemas/mjml-components-ai.json",
+  "title": "MJML Components Schema (AI-Optimized)",
+  "description": "JSON Schema for generating valid MJML email templates. This schema defines a tree structure where each node has: 'id' (string), 'type' (component name), optional 'children' (array of nodes), optional 'attributes' (object with component-specific properties), and optional 'content' (string for text/HTML). The schema enforces parent-child hierarchy rules and validates attribute formats with regex patterns.",
+  "$comment": "STRUCTURE RULES: Every object MUST have 'id' and 'type'. Root MUST be type='mjml'. Standard email structure: mjml > mj-body > mj-section > mj-column > content components (mj-text, mj-button, mj-image). ATTRIBUTE RULES: Use explicit attributes only: 'paddingTop'/'paddingRight'/'paddingBottom'/'paddingLeft' instead of 'padding', 'borderTop'/'borderRight' etc instead of 'border'. NO 'inner-*' attributes allowed. COMPONENT RESTRICTIONS: Do NOT use mj-table, mj-accordion, mj-hero, mj-navbar, or mj-carousel (excluded for simplicity). HIERARCHY: Check 'Allowed children' in component descriptions for valid nesting. EXAMPLES: See the examples array for a complete 'Hello World' template structure.",
+  "type": "object",
+  "examples": [
+    {
+      "description": "Basic 'Hello World' email showing proper hierarchy and explicit attribute usage",
+      "value": {
+        "id": "root-1",
+        "type": "mjml",
+        "children": [
+          {
+            "id": "body-1",
+            "type": "mj-body",
+            "attributes": {
+              "backgroundColor": "#f4f4f4"
+            },
+            "children": [
+              {
+                "id": "section-1",
+                "type": "mj-section",
+                "attributes": {
+                  "backgroundColor": "#ffffff",
+                  "paddingTop": "20px",
+                  "paddingBottom": "20px"
+                },
+                "children": [
+                  {
+                    "id": "column-1",
+                    "type": "mj-column",
+                    "children": [
+                      {
+                        "id": "text-1",
+                        "type": "mj-text",
+                        "content": "<h1>Hello World!</h1><p>This is a simple email built with MJML.</p>",
+                        "attributes": {
+                          "align": "center",
+                          "color": "#333333",
+                          "fontSize": "16px",
+                          "paddingTop": "10px",
+                          "paddingBottom": "10px"
+                        }
+                      },
+                      {
+                        "id": "button-1",
+                        "type": "mj-button",
+                        "content": "Click Me",
+                        "attributes": {
+                          "href": "https://example.com",
+                          "backgroundColor": "#007bff",
+                          "color": "#ffffff",
+                          "borderRadius": "4px",
+                          "paddingTop": "10px",
+                          "paddingBottom": "10px"
+                        }
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "required": [
+    "id",
+    "type"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "description": "Unique identifier for the component"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "mj-body",
+        "mj-button",
+        "mj-column",
+        "mj-divider",
+        "mj-group",
+        "mj-image",
+        "mj-raw",
+        "mj-section",
+        "mj-social",
+        "mj-social-element",
+        "mj-spacer",
+        "mj-text",
+        "mj-wrapper",
+        "mj-head",
+        "mj-attributes",
+        "mj-breakpoint",
+        "mj-font",
+        "mj-html-attributes",
+        "mj-preview",
+        "mj-style",
+        "mj-title",
+        "mjml"
+      ],
+      "description": "MJML component type"
+    },
+    "children": {
+      "type": "array",
+      "description": "Child components",
+      "items": {
+        "$ref": "#"
+      }
+    },
+    "attributes": {
+      "type": "object",
+      "description": "Component attributes",
+      "additionalProperties": true
+    },
+    "content": {
+      "type": "string",
+      "description": "Text/HTML content for leaf components"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-body"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-body component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "width": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px)|)$",
+                "description": "Width value (e.g., \"100px\", \"50%\", \"auto\"). Units: px.",
+                "default": "600px"
+              },
+              "background-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\")."
+              },
+              "css-class": {
+                "type": "string",
+                "description": "CSS class name to apply to the generated HTML element."
+              }
+            }
+          },
+          "children": {
+            "type": "array",
+            "description": "Allowed children: mj-wrapper, mj-section, mj-raw",
+            "items": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "mj-wrapper",
+                    "mj-section",
+                    "mj-raw"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-button"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-button component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "align": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "center",
+                  "right"
+                ],
+                "description": "Text/content alignment.",
+                "default": "center"
+              },
+              "background-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\").",
+                "default": "#414141"
+              },
+              "border-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-radius": {
+                "type": "string",
+                "description": "Border radius (e.g., \"4px\", \"50%\").",
+                "default": "3px"
+              },
+              "border-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\").",
+                "default": "#ffffff"
+              },
+              "container-background-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\")."
+              },
+              "font-family": {
+                "type": "string",
+                "pattern": "^[^;{}]+$",
+                "description": "Font family (e.g., \"Arial, sans-serif\", \"Roboto, sans-serif\").",
+                "default": "Ubuntu, Helvetica, Arial, sans-serif"
+              },
+              "font-size": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px)|)$",
+                "description": "Font size (e.g., \"16px\", \"1.2em\"). Units: px.",
+                "default": "13px"
+              },
+              "font-style": {
+                "type": "string",
+                "description": "font-style attribute"
+              },
+              "font-weight": {
+                "type": "string",
+                "description": "Font weight (e.g., \"normal\", \"bold\", \"400\", \"700\").",
+                "default": "normal"
+              },
+              "height": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Height value (e.g., \"100px\", \"auto\"). Units: px, %."
+              },
+              "href": {
+                "type": "string",
+                "pattern": "^[^<>]*$",
+                "description": "Link URL. Supports Liquid templating (e.g., \"{{variable}}\")."
+              },
+              "name": {
+                "type": "string",
+                "description": "name attribute"
+              },
+              "title": {
+                "type": "string",
+                "description": "Title text shown as tooltip on hover."
+              },
+              "letter-spacing": {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d+)?(px|%|em|rem)(\\s+\\d+(\\.\\d+)?(px|%|em|rem))*$",
+                "description": "Spacing value (e.g., \"0.5px\", \"0.1em\")."
+              },
+              "line-height": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Height value (e.g., \"100px\", \"auto\"). Units: px, %.",
+                "default": "120%"
+              },
+              "padding-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "rel": {
+                "type": "string",
+                "description": "Link relationship (e.g., \"noopener noreferrer\")."
+              },
+              "target": {
+                "type": "string",
+                "description": "Link target (e.g., \"_blank\", \"_self\").",
+                "default": "_blank"
+              },
+              "text-decoration": {
+                "type": "string",
+                "description": "text-decoration attribute",
+                "default": "none"
+              },
+              "text-transform": {
+                "type": "string",
+                "description": "text-transform attribute",
+                "default": "none"
+              },
+              "vertical-align": {
+                "type": "string",
+                "enum": [
+                  "top",
+                  "bottom",
+                  "middle"
+                ],
+                "description": "vertical-align attribute",
+                "default": "middle"
+              },
+              "text-align": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "right",
+                  "center"
+                ],
+                "description": "text-align attribute"
+              },
+              "width": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Width value (e.g., \"100px\", \"50%\", \"auto\"). Units: px, %."
+              },
+              "css-class": {
+                "type": "string",
+                "description": "CSS class name to apply to the generated HTML element."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-column"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-column component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "background-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\")."
+              },
+              "border-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-radius": {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d+)?(px|%)(\\s+\\d+(\\.\\d+)?(px|%))*$",
+                "description": "Border radius (e.g., \"4px\", \"50%\"). Units: px, %."
+              },
+              "border-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "ltr",
+                  "rtl"
+                ],
+                "description": "Text/content direction (ltr or rtl).",
+                "default": "ltr"
+              },
+              "padding-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "vertical-align": {
+                "type": "string",
+                "enum": [
+                  "top",
+                  "bottom",
+                  "middle"
+                ],
+                "description": "vertical-align attribute",
+                "default": "top"
+              },
+              "width": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Width value (e.g., \"100px\", \"50%\", \"auto\"). Units: px, %."
+              },
+              "css-class": {
+                "type": "string",
+                "description": "CSS class name to apply to the generated HTML element."
+              }
+            }
+          },
+          "children": {
+            "type": "array",
+            "description": "Allowed children: mj-text, mj-button, mj-image, mj-divider, mj-spacer, mj-social, mj-raw",
+            "items": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "mj-text",
+                    "mj-button",
+                    "mj-image",
+                    "mj-divider",
+                    "mj-spacer",
+                    "mj-social",
+                    "mj-raw"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-divider"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-divider component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "border-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\").",
+                "default": "#000000"
+              },
+              "border-style": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\").",
+                "default": "solid"
+              },
+              "border-width": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px)|)$",
+                "description": "Width value (e.g., \"100px\", \"50%\", \"auto\"). Units: px.",
+                "default": "4px"
+              },
+              "container-background-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\")."
+              },
+              "padding-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "width": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Width value (e.g., \"100px\", \"50%\", \"auto\"). Units: px, %.",
+                "default": "100%"
+              },
+              "align": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "center",
+                  "right"
+                ],
+                "description": "Text/content alignment.",
+                "default": "center"
+              },
+              "css-class": {
+                "type": "string",
+                "description": "CSS class name to apply to the generated HTML element."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-group"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-group component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "background-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\")."
+              },
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "ltr",
+                  "rtl"
+                ],
+                "description": "Text/content direction (ltr or rtl).",
+                "default": "ltr"
+              },
+              "vertical-align": {
+                "type": "string",
+                "enum": [
+                  "top",
+                  "bottom",
+                  "middle"
+                ],
+                "description": "vertical-align attribute"
+              },
+              "width": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Width value (e.g., \"100px\", \"50%\", \"auto\"). Units: px, %."
+              },
+              "css-class": {
+                "type": "string",
+                "description": "CSS class name to apply to the generated HTML element."
+              }
+            }
+          },
+          "children": {
+            "type": "array",
+            "description": "Allowed children: mj-column",
+            "items": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "mj-column"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-image"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-image component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "alt": {
+                "type": "string",
+                "description": "Alternative text for accessibility and when images fail to load.",
+                "default": ""
+              },
+              "href": {
+                "type": "string",
+                "pattern": "^[^<>]*$",
+                "description": "Link URL. Supports Liquid templating (e.g., \"{{variable}}\")."
+              },
+              "name": {
+                "type": "string",
+                "description": "name attribute"
+              },
+              "src": {
+                "type": "string",
+                "pattern": "^[^<>]*$",
+                "description": "Image/resource URL. Supports Liquid templating."
+              },
+              "srcset": {
+                "type": "string",
+                "pattern": "^[^<>]*$",
+                "description": "srcset attribute"
+              },
+              "sizes": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%|em|rem|auto)|auto|)$",
+                "description": "sizes attribute"
+              },
+              "title": {
+                "type": "string",
+                "description": "Title text shown as tooltip on hover."
+              },
+              "rel": {
+                "type": "string",
+                "description": "Link relationship (e.g., \"noopener noreferrer\")."
+              },
+              "align": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "center",
+                  "right"
+                ],
+                "description": "Text/content alignment.",
+                "default": "center"
+              },
+              "border-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-radius": {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d+)?(px|%)(\\s+\\d+(\\.\\d+)?(px|%))*$",
+                "description": "Border radius (e.g., \"4px\", \"50%\"). Units: px, %."
+              },
+              "container-background-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\")."
+              },
+              "fluid-on-mobile": {
+                "type": "string",
+                "enum": [
+                  "true",
+                  "false"
+                ],
+                "description": "fluid-on-mobile attribute"
+              },
+              "padding-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "target": {
+                "type": "string",
+                "description": "Link target (e.g., \"_blank\", \"_self\").",
+                "default": "_blank"
+              },
+              "width": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px)|)$",
+                "description": "Width value (e.g., \"100px\", \"50%\", \"auto\"). Units: px."
+              },
+              "height": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px)|auto|)$",
+                "description": "Height value (e.g., \"100px\", \"auto\"). Units: px, auto.",
+                "default": "auto"
+              },
+              "max-height": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Height value (e.g., \"100px\", \"auto\"). Units: px, %."
+              },
+              "font-size": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px)|)$",
+                "description": "Font size (e.g., \"16px\", \"1.2em\"). Units: px.",
+                "default": "13px"
+              },
+              "usemap": {
+                "type": "string",
+                "description": "usemap attribute"
+              },
+              "css-class": {
+                "type": "string",
+                "description": "CSS class name to apply to the generated HTML element."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-raw"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-raw component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "position": {
+                "type": "string",
+                "enum": [
+                  "file-start"
+                ],
+                "description": "position attribute"
+              },
+              "css-class": {
+                "type": "string",
+                "description": "CSS class name to apply to the generated HTML element."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-section"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-section component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "background-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\")."
+              },
+              "background-url": {
+                "type": "string",
+                "pattern": "^[^<>]*$",
+                "description": "Background image URL."
+              },
+              "background-repeat": {
+                "type": "string",
+                "enum": [
+                  "repeat",
+                  "no-repeat"
+                ],
+                "description": "Background repeat (e.g., \"repeat\", \"no-repeat\").",
+                "default": "repeat"
+              },
+              "background-size": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%|em|rem|auto)|auto|)$",
+                "description": "Background size (e.g., \"cover\", \"contain\", \"100px 200px\").",
+                "default": "auto"
+              },
+              "background-position": {
+                "type": "string",
+                "description": "Background position (e.g., \"center\", \"top left\", \"50% 50%\").",
+                "default": "top center"
+              },
+              "background-position-x": {
+                "type": "string",
+                "description": "Background position (e.g., \"center\", \"top left\", \"50% 50%\")."
+              },
+              "background-position-y": {
+                "type": "string",
+                "description": "Background position (e.g., \"center\", \"top left\", \"50% 50%\")."
+              },
+              "border-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-radius": {
+                "type": "string",
+                "description": "Border radius (e.g., \"4px\", \"50%\")."
+              },
+              "border-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "ltr",
+                  "rtl"
+                ],
+                "description": "Text/content direction (ltr or rtl).",
+                "default": "ltr"
+              },
+              "full-width": {
+                "type": "string",
+                "enum": [
+                  "full-width",
+                  "false",
+                  ""
+                ],
+                "description": "Width value (e.g., \"100px\", \"50%\", \"auto\")."
+              },
+              "padding-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "text-align": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "center",
+                  "right"
+                ],
+                "description": "text-align attribute",
+                "default": "center"
+              },
+              "text-padding": {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d+)?(px|%)(\\s+\\d+(\\.\\d+)?(px|%))*$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %.",
+                "default": "4px 4px 4px 0"
+              },
+              "css-class": {
+                "type": "string",
+                "description": "CSS class name to apply to the generated HTML element."
+              }
+            }
+          },
+          "children": {
+            "type": "array",
+            "description": "Allowed children: mj-column, mj-group, mj-raw",
+            "items": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "mj-column",
+                    "mj-group",
+                    "mj-raw"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-social"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-social component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "align": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "right",
+                  "center"
+                ],
+                "description": "Text/content alignment.",
+                "default": "center"
+              },
+              "border-radius": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Border radius (e.g., \"4px\", \"50%\"). Units: px, %.",
+                "default": "3px"
+              },
+              "container-background-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\")."
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\").",
+                "default": "#333333"
+              },
+              "font-family": {
+                "type": "string",
+                "pattern": "^[^;{}]+$",
+                "description": "Font family (e.g., \"Arial, sans-serif\", \"Roboto, sans-serif\").",
+                "default": "Ubuntu, Helvetica, Arial, sans-serif"
+              },
+              "font-size": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px)|)$",
+                "description": "Font size (e.g., \"16px\", \"1.2em\"). Units: px.",
+                "default": "13px"
+              },
+              "font-style": {
+                "type": "string",
+                "description": "font-style attribute"
+              },
+              "font-weight": {
+                "type": "string",
+                "description": "Font weight (e.g., \"normal\", \"bold\", \"400\", \"700\")."
+              },
+              "icon-size": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "icon-size attribute Units: px, %.",
+                "default": "20px"
+              },
+              "icon-height": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Height value (e.g., \"100px\", \"auto\"). Units: px, %."
+              },
+              "icon-padding": {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d+)?(px|%)(\\s+\\d+(\\.\\d+)?(px|%))*$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "line-height": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Height value (e.g., \"100px\", \"auto\"). Units: px, %.",
+                "default": "22px"
+              },
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "horizontal",
+                  "vertical"
+                ],
+                "description": "mode attribute",
+                "default": "horizontal"
+              },
+              "padding-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "table-layout": {
+                "type": "string",
+                "enum": [
+                  "auto",
+                  "fixed"
+                ],
+                "description": "table-layout attribute"
+              },
+              "text-padding": {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d+)?(px|%)(\\s+\\d+(\\.\\d+)?(px|%))*$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "text-decoration": {
+                "type": "string",
+                "description": "text-decoration attribute",
+                "default": "none"
+              },
+              "vertical-align": {
+                "type": "string",
+                "enum": [
+                  "top",
+                  "bottom",
+                  "middle"
+                ],
+                "description": "vertical-align attribute"
+              },
+              "css-class": {
+                "type": "string",
+                "description": "CSS class name to apply to the generated HTML element."
+              }
+            }
+          },
+          "children": {
+            "type": "array",
+            "description": "Allowed children: mj-social-element",
+            "items": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "mj-social-element"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-social-element"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-social-element component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "align": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "center",
+                  "right"
+                ],
+                "description": "Text/content alignment.",
+                "default": "left"
+              },
+              "icon-position": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "right"
+                ],
+                "description": "icon-position attribute",
+                "default": "left"
+              },
+              "background-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\")."
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\").",
+                "default": "#000"
+              },
+              "border-radius": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px)|)$",
+                "description": "Border radius (e.g., \"4px\", \"50%\"). Units: px.",
+                "default": "3px"
+              },
+              "font-family": {
+                "type": "string",
+                "pattern": "^[^;{}]+$",
+                "description": "Font family (e.g., \"Arial, sans-serif\", \"Roboto, sans-serif\").",
+                "default": "Ubuntu, Helvetica, Arial, sans-serif"
+              },
+              "font-size": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px)|)$",
+                "description": "Font size (e.g., \"16px\", \"1.2em\"). Units: px.",
+                "default": "13px"
+              },
+              "font-style": {
+                "type": "string",
+                "description": "font-style attribute"
+              },
+              "font-weight": {
+                "type": "string",
+                "description": "Font weight (e.g., \"normal\", \"bold\", \"400\", \"700\")."
+              },
+              "href": {
+                "type": "string",
+                "pattern": "^[^<>]*$",
+                "description": "Link URL. Supports Liquid templating (e.g., \"{{variable}}\")."
+              },
+              "icon-size": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "icon-size attribute Units: px, %."
+              },
+              "icon-height": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Height value (e.g., \"100px\", \"auto\"). Units: px, %."
+              },
+              "icon-padding": {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d+)?(px|%)(\\s+\\d+(\\.\\d+)?(px|%))*$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "line-height": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Height value (e.g., \"100px\", \"auto\"). Units: px, %.",
+                "default": "1"
+              },
+              "name": {
+                "type": "string",
+                "description": "name attribute"
+              },
+              "padding-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "text-padding": {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d+)?(px|%)(\\s+\\d+(\\.\\d+)?(px|%))*$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %.",
+                "default": "4px 4px 4px 0"
+              },
+              "rel": {
+                "type": "string",
+                "description": "Link relationship (e.g., \"noopener noreferrer\")."
+              },
+              "src": {
+                "type": "string",
+                "pattern": "^[^<>]*$",
+                "description": "Image/resource URL. Supports Liquid templating."
+              },
+              "srcset": {
+                "type": "string",
+                "pattern": "^[^<>]*$",
+                "description": "srcset attribute"
+              },
+              "sizes": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%|em|rem|auto)|auto|)$",
+                "description": "sizes attribute"
+              },
+              "alt": {
+                "type": "string",
+                "description": "Alternative text for accessibility and when images fail to load.",
+                "default": ""
+              },
+              "title": {
+                "type": "string",
+                "description": "Title text shown as tooltip on hover."
+              },
+              "target": {
+                "type": "string",
+                "description": "Link target (e.g., \"_blank\", \"_self\").",
+                "default": "_blank"
+              },
+              "text-decoration": {
+                "type": "string",
+                "description": "text-decoration attribute",
+                "default": "none"
+              },
+              "vertical-align": {
+                "type": "string",
+                "enum": [
+                  "top",
+                  "middle",
+                  "bottom"
+                ],
+                "description": "vertical-align attribute",
+                "default": "middle"
+              },
+              "css-class": {
+                "type": "string",
+                "description": "CSS class name to apply to the generated HTML element."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-spacer"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-spacer component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "border-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "container-background-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\")."
+              },
+              "padding-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "height": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Height value (e.g., \"100px\", \"auto\"). Units: px, %.",
+                "default": "20px"
+              },
+              "css-class": {
+                "type": "string",
+                "description": "CSS class name to apply to the generated HTML element."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-text"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-text component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "align": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "right",
+                  "center",
+                  "justify"
+                ],
+                "description": "Text/content alignment.",
+                "default": "left"
+              },
+              "background-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\")."
+              },
+              "color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\").",
+                "default": "#000000"
+              },
+              "container-background-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\")."
+              },
+              "font-family": {
+                "type": "string",
+                "pattern": "^[^;{}]+$",
+                "description": "Font family (e.g., \"Arial, sans-serif\", \"Roboto, sans-serif\").",
+                "default": "Ubuntu, Helvetica, Arial, sans-serif"
+              },
+              "font-size": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px)|)$",
+                "description": "Font size (e.g., \"16px\", \"1.2em\"). Units: px.",
+                "default": "13px"
+              },
+              "font-style": {
+                "type": "string",
+                "description": "font-style attribute"
+              },
+              "font-weight": {
+                "type": "string",
+                "description": "Font weight (e.g., \"normal\", \"bold\", \"400\", \"700\")."
+              },
+              "height": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Height value (e.g., \"100px\", \"auto\"). Units: px, %."
+              },
+              "letter-spacing": {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d+)?(px|%|em|rem)(\\s+\\d+(\\.\\d+)?(px|%|em|rem))*$",
+                "description": "Spacing value (e.g., \"0.5px\", \"0.1em\")."
+              },
+              "line-height": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Height value (e.g., \"100px\", \"auto\"). Units: px, %.",
+                "default": "1"
+              },
+              "padding-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "text-decoration": {
+                "type": "string",
+                "description": "text-decoration attribute"
+              },
+              "text-transform": {
+                "type": "string",
+                "description": "text-transform attribute"
+              },
+              "vertical-align": {
+                "type": "string",
+                "enum": [
+                  "top",
+                  "bottom",
+                  "middle"
+                ],
+                "description": "vertical-align attribute"
+              },
+              "css-class": {
+                "type": "string",
+                "description": "CSS class name to apply to the generated HTML element."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-wrapper"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-wrapper component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "background-color": {
+                "type": "string",
+                "pattern": "^(#([0-9a-fA-F]{3}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})|rgba?\\s*\\([^)]+\\)|hsla?\\s*\\([^)]+\\)|[a-zA-Z]+)$",
+                "description": "Color value (e.g., \"#ffffff\", \"red\", \"rgb(255,255,255)\")."
+              },
+              "background-url": {
+                "type": "string",
+                "pattern": "^[^<>]*$",
+                "description": "Background image URL."
+              },
+              "background-repeat": {
+                "type": "string",
+                "enum": [
+                  "repeat",
+                  "no-repeat"
+                ],
+                "description": "Background repeat (e.g., \"repeat\", \"no-repeat\").",
+                "default": "repeat"
+              },
+              "background-size": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%|em|rem|auto)|auto|)$",
+                "description": "Background size (e.g., \"cover\", \"contain\", \"100px 200px\").",
+                "default": "auto"
+              },
+              "background-position": {
+                "type": "string",
+                "description": "Background position (e.g., \"center\", \"top left\", \"50% 50%\").",
+                "default": "top center"
+              },
+              "background-position-x": {
+                "type": "string",
+                "description": "Background position (e.g., \"center\", \"top left\", \"50% 50%\")."
+              },
+              "background-position-y": {
+                "type": "string",
+                "description": "Background position (e.g., \"center\", \"top left\", \"50% 50%\")."
+              },
+              "border-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-radius": {
+                "type": "string",
+                "description": "Border radius (e.g., \"4px\", \"50%\")."
+              },
+              "border-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "border-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|em|rem)\\s+(solid|dashed|dotted|double|groove|ridge|inset|outset|none|hidden)\\s+.+|none)$",
+                "description": "Border definition (e.g., \"1px solid #ccc\", \"2px dashed red\")."
+              },
+              "direction": {
+                "type": "string",
+                "enum": [
+                  "ltr",
+                  "rtl"
+                ],
+                "description": "Text/content direction (ltr or rtl).",
+                "default": "ltr"
+              },
+              "full-width": {
+                "type": "string",
+                "enum": [
+                  "full-width",
+                  "false",
+                  ""
+                ],
+                "description": "Width value (e.g., \"100px\", \"50%\", \"auto\")."
+              },
+              "padding-top": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-bottom": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-left": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "padding-right": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px|%)|)$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %."
+              },
+              "text-align": {
+                "type": "string",
+                "enum": [
+                  "left",
+                  "center",
+                  "right"
+                ],
+                "description": "text-align attribute",
+                "default": "center"
+              },
+              "text-padding": {
+                "type": "string",
+                "pattern": "^\\d+(\\.\\d+)?(px|%)(\\s+\\d+(\\.\\d+)?(px|%))*$",
+                "description": "Padding value. Supports 1-4 values (e.g., \"10px\", \"10px 20px\"). Units: px, %.",
+                "default": "4px 4px 4px 0"
+              },
+              "gap": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px)|)$",
+                "description": "gap attribute Units: px."
+              },
+              "css-class": {
+                "type": "string",
+                "description": "CSS class name to apply to the generated HTML element."
+              }
+            }
+          },
+          "children": {
+            "type": "array",
+            "description": "Allowed children: mj-section, mj-raw",
+            "items": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "mj-section",
+                    "mj-raw"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-head"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-head component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {}
+          },
+          "children": {
+            "type": "array",
+            "description": "Allowed children: mj-attributes, mj-breakpoint, mj-font, mj-html-attributes, mj-preview, mj-style, mj-title, mj-raw",
+            "items": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "mj-attributes",
+                    "mj-breakpoint",
+                    "mj-font",
+                    "mj-html-attributes",
+                    "mj-preview",
+                    "mj-style",
+                    "mj-title",
+                    "mj-raw"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-attributes"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-attributes component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {}
+          },
+          "children": {
+            "type": "array",
+            "description": "Allowed children: mj-text, mj-button, mj-image, mj-section, mj-column, mj-wrapper, mj-group, mj-divider, mj-spacer, mj-social, mj-social-element",
+            "items": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "mj-text",
+                    "mj-button",
+                    "mj-image",
+                    "mj-section",
+                    "mj-column",
+                    "mj-wrapper",
+                    "mj-group",
+                    "mj-divider",
+                    "mj-spacer",
+                    "mj-social",
+                    "mj-social-element"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-breakpoint"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-breakpoint component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "width": {
+                "type": "string",
+                "pattern": "^(\\d+(\\.\\d+)?(px)|)$",
+                "description": "Width value (e.g., \"100px\", \"50%\", \"auto\"). Units: px."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-font"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-font component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "name attribute"
+              },
+              "href": {
+                "type": "string",
+                "pattern": "^[^<>]*$",
+                "description": "Link URL. Supports Liquid templating (e.g., \"{{variable}}\")."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-html-attributes"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-html-attributes component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-preview"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-preview component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-style"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-style component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "inline": {
+                "type": "string",
+                "description": "inline attribute"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mj-title"
+          }
+        }
+      },
+      "then": {
+        "description": "mj-title component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "type": {
+            "const": "mjml"
+          }
+        }
+      },
+      "then": {
+        "description": "mjml component",
+        "properties": {
+          "attributes": {
+            "type": "object",
+            "additionalProperties": true,
+            "properties": {
+              "owa": {
+                "type": "string",
+                "description": "Outlook Web App rendering mode. Set to \"desktop\" to force desktop layout in OWA.",
+                "default": "mobile"
+              },
+              "lang": {
+                "type": "string",
+                "description": "Language of the email content (e.g., \"en\", \"fr\"). Defaults to \"und\" (undefined).",
+                "default": "und"
+              },
+              "dir": {
+                "type": "string",
+                "enum": [
+                  "ltr",
+                  "rtl",
+                  "auto"
+                ],
+                "description": "Text direction for the email (ltr = left-to-right, rtl = right-to-left). Defaults to \"auto\".",
+                "default": "auto"
+              }
+            }
+          },
+          "children": {
+            "type": "array",
+            "description": "Allowed children: mj-head, mj-body",
+            "items": {
+              "properties": {
+                "type": {
+                  "enum": [
+                    "mj-head",
+                    "mj-body"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "mjml-validator",
+  "version": "1.0.0",
+  "description": "Extract MJML component specifications and generate JSON Schema",
+  "main": "extract_specs.js",
+  "type": "module",
+  "scripts": {
+    "extract": "node extract_specs.js"
+  },
+  "dependencies": {
+    "mjml": "^4.18.0",
+    "mjml-core": "^4.18.0"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "mjml",
+    "schema",
+    "validation"
+  ],
+  "author": "",
+  "license": "MIT"
+}

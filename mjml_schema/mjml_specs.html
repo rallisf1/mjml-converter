@@ -1,0 +1,3675 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>Documentation for MJML - The Responsive Email Framework</title>
+</head>
+
+<body class="index" data-languages="[&quot;html&quot;]">
+
+    <h2 id='mjml'>mjml</h2>
+    <p>A MJML document starts with a <code>&lt;mjml&gt;</code> tag, it can contain only <code>mj-head</code> and
+        <code>mj-body</code> tags. Both have the same purpose of <code>head</code> and <code>body</code> in a
+        HTML document.
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>owa</td>
+                <td>string</td>
+                <td>if set to &quot;desktop&quot;, switch force desktop version for older (self-hosted) version
+                    of Outlook.com that doesn&#39;t support media queries (cf. <a
+                        href="https://github.com/mjmlio/mjml/issues/2241">this issue</a>)</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>lang</td>
+                <td>string</td>
+                <td>used as <code>&lt;html lang=&quot;&quot;&gt;</code> attribute</td>
+                <td>und</td>
+            </tr>
+            <tr>
+                <td>dir</td>
+                <td>string</td>
+                <td>used as <code>&lt;html dir=&quot;&quot;&gt;</code> attribute</td>
+                <td>auto</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-head'>mj-head</h2>
+    <p>mj-head contains head components, related to the document such as style and meta elements (see <a
+            href="#standard-head-components">head components</a>).</p>
+    <h2 id='mj-body'>mj-body</h2>
+    <p>This is the starting point of your email. To aid accessibility, MJML automatically adds a
+        <code>div</code> tag as the child of the body, with the following ARIA attributes
+        <code>role=&quot;article&quot;</code>, <code>aria-roledescription=&quot;email&quot;</code> and
+        <code>aria-label=&quot;EMAIL NAME&quot;</code>, where &#39;EMAIL NAME&#39; is taken from the content of
+        the <code>mj-title</code> tag. The <code>lang</code> and <code>dir</code> attributes are also added
+        here, with values taken from the <code>mjml</code> tag.
+    </p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="c">&lt;!-- Your email goes here --&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a target="_blank" href="https://mjml.io/try-it-live/components/body">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <aside class="notice">
+        mj-body replaces the couple mj-body and mj-container of MJML v3.
+    </aside>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>background-color</td>
+                <td>color formats</td>
+                <td>the general background color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class </td>
+                <td>string </td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>width</td>
+                <td>px</td>
+                <td>email&#39;s width</td>
+                <td>600px</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-include'>mj-include</h2>
+    <p>The <code>mjml-core</code> package allows you to include external <code>mjml</code> files
+        to build your email template.</p>
+    <pre class="highlight xml tab-xml"><code><span class="c">&lt;!-- header.mjml --&gt;</span>
+<span class="nt">&lt;mj-section&gt;</span>
+  <span class="nt">&lt;mj-column&gt;</span>
+    <span class="nt">&lt;mj-text&gt;</span>This is a header<span class="nt">&lt;/mj-text&gt;</span>
+  <span class="nt">&lt;/mj-column&gt;</span>
+<span class="nt">&lt;/mj-section&gt;</span>
+</code></pre>
+    <p>You can wrap your external mjml files inside the default <code>mjml &gt; mj-body</code>
+        tags to make it easier to preview outside the main template.</p>
+    <pre class="highlight xml tab-xml"><code><span class="c">&lt;!-- main.mjml --&gt;</span>
+<span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-include</span> <span class="na">path=</span><span class="s">"./header.mjml"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p>The <code>MJML</code> engine will then replace your included files before starting the rendering process.
+    </p>
+    <h3 id='other-file-types'>Other file types</h3>
+    <p>You can include external <code>css</code> files. They will be inserted the same way as when using a
+        <code>mj-style</code>.<br>
+        You need to specify that you&#39;re including a css file using the <code>type=&quot;css&quot;</code>
+        attribute.<br>
+        If you want the css to be inlined, you can use the <code>css-inline=&quot;inline&quot;</code> attribute.
+    </p>
+    <pre class="highlight xml tab-xml"><code><span class="c">&lt;!-- main.mjml --&gt;</span>
+  <span class="nt">&lt;mj-include</span> <span class="na">path=</span><span class="s">"./styles.css"</span> <span class="na">type=</span><span class="s">"css"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;mj-include</span> <span class="na">path=</span><span class="s">"./inline-styles.css"</span> <span class="na">type=</span><span class="s">"css"</span> <span class="na">css-inline=</span><span class="s">"inline"</span> <span class="nt">/&gt;</span>
+</code></pre>
+    <p>You can also include external <code>html</code> files. They will be inserted the same way as when using a
+        <code>mj-raw</code>.<br>
+        You need to specify that you&#39;re including a html file using the <code>type=&quot;html&quot;</code>
+        attribute.
+    </p>
+    <pre class="highlight xml tab-xml"><code><span class="c">&lt;!-- main.mjml --&gt;</span>
+  <span class="nt">&lt;mj-include</span> <span class="na">path=</span><span class="s">"./partial.html"</span> <span class="na">type=</span><span class="s">"html"</span> <span class="nt">/&gt;</span>
+</code></pre>
+    <h1 id='standard-head-components'>Standard Head components</h1>
+    <p>Head components ease your development process, enabling you to import fonts, define default styles or
+        create classes for MJML components among others.</p>
+    <h2 id='mj-attributes'>mj-attributes</h2>
+    <p>Inside <code>mj-attributes</code>, a tag citing one MJML component (like <code>mj-text</code>;
+        see example) overrides default settings for listed MJML attributes
+        on the one component.</p>
+
+    <p>An <code>mj-all</code> is like the above, but affects all MJML components via the one tag.</p>
+
+    <p><code>mj-class</code> tags create a named group of MJML attributes you can apply to MJML
+        components. To apply them, use <code>mj-class=&quot;&lt;name&gt;&quot;</code>.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-head&gt;</span>
+    <span class="nt">&lt;mj-attributes&gt;</span>
+      <span class="nt">&lt;mj-text</span> <span class="na">padding=</span><span class="s">"0"</span> <span class="nt">/&gt;</span>
+      <span class="nt">&lt;mj-class</span> <span class="na">name=</span><span class="s">"blue"</span> <span class="na">color=</span><span class="s">"blue"</span> <span class="nt">/&gt;</span>
+      <span class="nt">&lt;mj-class</span> <span class="na">name=</span><span class="s">"big"</span> <span class="na">font-size=</span><span class="s">"20px"</span> <span class="nt">/&gt;</span>
+      <span class="nt">&lt;mj-all</span> <span class="na">font-family=</span><span class="s">"Arial"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/mj-attributes&gt;</span>
+  <span class="nt">&lt;/mj-head&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-text</span> <span class="na">mj-class=</span><span class="s">"blue big"</span><span class="nt">&gt;</span>
+          Hello World!
+        <span class="nt">&lt;/mj-text&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/head-attributes">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <aside class="notice">
+        In the following list, MJML applies only the first MJML attributes found:
+        <ul>
+            <li>inline MJML attributes,</li>
+            <li>the entry for the same MJML component (like, "mj-text") in "mj-attributes",</li>
+            <li>"mj-all" in "mj-attributes", and</li>
+            <li>default MJML values.</li>
+        </ul>
+    </aside>
+    <h2 id='mj-breakpoint'>mj-breakpoint</h2>
+    <p>This tag allows you to control on which breakpoint the layout should go desktop/mobile.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-head&gt;</span>
+    <span class="nt">&lt;mj-breakpoint</span> <span class="na">width=</span><span class="s">"320px"</span> <span class="nt">/&gt;</span>
+  <span class="nt">&lt;/mj-head&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-text&gt;</span>
+          Hello World!
+        <span class="nt">&lt;/mj-text&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/head-breakpoint">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>width</td>
+                <td>px</td>
+                <td>breakpoint&#39;s value</td>
+                <td>n/a</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-font'>mj-font</h2>
+    <p>This tag imports fonts.
+        The tag has effect only if the template uses the font, too.
+        The <code>href</code> attribute points to a hosted css file; that file contains a
+        <code>@font-face</code> declaration.
+        Example: <a href="https://fonts.googleapis.com/css?family=Raleway">https://fonts
+            .googleapis.com/css?family=Raleway</a>
+    </p>
+    <pre class="highlight xml tab-xml"><code> <span class="nt">&lt;mjml&gt;</span>
+   <span class="nt">&lt;mj-head&gt;</span>
+     <span class="nt">&lt;mj-font</span> <span class="na">name=</span><span class="s">"Raleway"</span>
+       <span class="na">href=</span><span class="s">"https://fonts.googleapis.com/css?family=Raleway"</span> <span class="nt">/&gt;</span>
+   <span class="nt">&lt;/mj-head&gt;</span>
+   <span class="nt">&lt;mj-body&gt;</span>
+     <span class="nt">&lt;mj-section&gt;</span>
+       <span class="nt">&lt;mj-column&gt;</span>
+         <span class="nt">&lt;mj-text</span> <span class="na">font-family=</span><span class="s">"Raleway, Arial"</span><span class="nt">&gt;</span>
+           Hello World!
+         <span class="nt">&lt;/mj-text&gt;</span>
+       <span class="nt">&lt;/mj-column&gt;</span>
+      <span class="nt">&lt;/mj-section&gt;</span>
+   <span class="nt">&lt;/mj-body&gt;</span>
+ <span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/head-font">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>href</td>
+                <td>string</td>
+                <td>URL of a hosted CSS file</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>name</td>
+                <td>string</td>
+                <td>name of the font</td>
+                <td>n/a</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-html-attributes'>mj-html-attributes</h2>
+    <p>This tag allows you to add custom attributes on any html tag of the generated html, using css selectors.
+        It&#39;s not needed for most email creations, but can be useful in some cases, i.e. editable templates.
+    </p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-head&gt;</span>
+    <span class="nt">&lt;mj-html-attributes&gt;</span>
+      <span class="nt">&lt;mj-selector</span> <span class="na">path=</span><span class="s">".custom div"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;mj-html-attribute</span> <span class="na">name=</span><span class="s">"data-id"</span><span class="nt">&gt;</span>42<span class="nt">&lt;/mj-html-attribute&gt;</span>
+      <span class="nt">&lt;/mj-selector&gt;</span>
+    <span class="nt">&lt;/mj-html-attributes&gt;</span>
+  <span class="nt">&lt;/mj-head&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-text</span> <span class="na">css-class=</span><span class="s">"custom"</span><span class="nt">&gt;</span>
+          Hello World!
+        <span class="nt">&lt;/mj-text&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p>In the generated html, a mj-text becomes a <code>td</code>, and a <code>div</code> inside this
+        <code>td</code>. In this example, the <code>td</code> will have the
+        <code>class=&quot;custom&quot;</code>. Using the css selector <code>path=&quot;.custom div&quot;</code>,
+        the <code>div</code> inside the <code>td</code> will get the attribute
+        <code>data-id=&quot;42&quot;</code>.
+    </p>
+
+    <p>To use this component, you will likely have to look at the generated html to see where exactly are the
+        <code>css-class</code> applied, to know which css selector you need to use to add your custom attribute
+        on the right html tag.
+    </p>
+
+    <p>You can use multiple <code>mj-selector</code> inside a <code>mj-html-attributes</code>, and multiple
+        <code>mj-html-attribute</code> inside a <code>mj-selector</code>.
+    </p>
+
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/head-html-attributes">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+    <h2 id='mj-preview'>mj-preview</h2>
+    <p>This tag allows you to set the preview that will be displayed in the inbox of the recipient.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-head&gt;</span>
+    <span class="nt">&lt;mj-preview&gt;</span>Hello MJML<span class="nt">&lt;/mj-preview&gt;</span>
+  <span class="nt">&lt;/mj-head&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-text&gt;</span>
+          Hello World!           
+        <span class="nt">&lt;/mj-text&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/head-preview">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <p><code>mj-preview</code> doesn&#39;t support any attribute.</p>
+    <h2 id='mj-style'>mj-style</h2>
+    <p>This tag allows you to set CSS styles that will be applied to the <b>HTML</b> in your MJML document as
+        well as the HTML outputted. The CSS styles will be added to the head of the rendered HTML by default,
+        but can also be inlined by using the <code>inline=&quot;inline&quot;</code> attribute.</p>
+
+    <p>Here is an example showing the use in combination with the <code>css-class</code> attribute, which is
+        supported by all body components.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-head&gt;</span>
+    <span class="nt">&lt;mj-attributes&gt;</span>
+      <span class="nt">&lt;mj-class</span> <span class="na">name=</span><span class="s">"mjclass"</span> <span class="na">color=</span><span class="s">"green"</span> <span class="na">font-size=</span><span class="s">"30px"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/mj-attributes&gt;</span>
+    <span class="nt">&lt;mj-style</span> <span class="na">inline=</span><span class="s">"inline"</span><span class="nt">&gt;</span>
+      .blue-text div {
+        color: blue !important;
+      }
+    <span class="nt">&lt;/mj-style&gt;</span>
+    <span class="nt">&lt;mj-style&gt;</span>
+      .red-text div {
+        color: red !important;
+        text-decoration: underline !important;
+      }
+    <span class="nt">&lt;/mj-style&gt;</span>
+  <span class="nt">&lt;/mj-head&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-text</span> <span class="na">css-class=</span><span class="s">"red-text"</span><span class="nt">&gt;</span>I'm red and underlined<span class="nt">&lt;/mj-text&gt;</span>
+        <span class="nt">&lt;mj-text</span> <span class="na">css-class=</span><span class="s">"blue-text"</span><span class="nt">&gt;</span>I'm blue because of inline<span class="nt">&lt;/mj-text&gt;</span>
+        <span class="nt">&lt;mj-text</span> <span class="na">mj-class=</span><span class="s">"mjclass"</span><span class="nt">&gt;</span>I'm green<span class="nt">&lt;/mj-text&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/head-style">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>inline</td>
+                <td>string</td>
+                <td>set to &quot;inline&quot; to inline styles</td>
+                <td>n/a</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <aside class="notice">
+        Mjml generates multiple html elements from a single mjml element. For optimal flexibility, the
+        `css-class` will be applied to the most outer html element, so if you want to target a specific
+        sub-element with a css selector, you may need to look at the generated html to see which exact selector
+        you need.
+    </aside>
+    <h2 id='mj-title'>mj-title</h2>
+    <p>Defines the document&#39;s title that browsers show in the title bar or a page&#39;s tab.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-head&gt;</span>
+    <span class="nt">&lt;mj-title&gt;</span>Hello MJML<span class="nt">&lt;/mj-title&gt;</span>
+  <span class="nt">&lt;/mj-head&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-text&gt;</span>
+          Hello World!
+        <span class="nt">&lt;/mj-text&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/head-title">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+    <h1 id='standard-body-components'>Standard Body components</h1>
+    <p>MJML comes out of the box with a set of standard components to help you build easily your first templates
+        without having to reinvent the wheel.</p>
+    <h2 id='mj-accordion'>mj-accordion</h2>
+    <p style="text-align: center;">
+        <img src="https://static.mailjet.com/mjml-website/documentation/accordion-example.gif" alt="accordion" />
+    </p>
+
+    <p><code>mj-accordion</code> is an interactive MJML component to stack content in tabs, so the information
+        is collapsed and only the titles are visible. Readers can interact by clicking on the tabs to reveal the
+        content, providing a great experience on mobile devices where space is scarce.</p>
+
+    <aside class="notice">
+        `mj-accordion-text` and `mj-accordion-title` are "ending tags", which means they can contain HTML code
+        which will be left as it is, so they can contain HTML tags with attributes, but they cannot contain
+        other MJML components. More information about ending tags <a href="#ending-tags">in this section</a>.
+    </aside>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-head&gt;</span>
+    <span class="nt">&lt;mj-attributes&gt;</span>
+      <span class="nt">&lt;mj-accordion</span> <span class="na">border=</span><span class="s">"none"</span> <span class="na">padding=</span><span class="s">"1px"</span> <span class="nt">/&gt;</span>
+      <span class="nt">&lt;mj-accordion-element</span> <span class="na">icon-wrapped-url=</span><span class="s">"https://static.mailjet.com/mjml-website/documentation/accordion-arrow-down.png"</span> <span class="na">icon-unwrapped-url=</span><span class="s">"https://static.mailjet.com/mjml-website/documentation/accordion-arrow-up.png"</span> <span class="na">icon-height=</span><span class="s">"24px"</span> <span class="na">icon-width=</span><span class="s">"24px"</span> <span class="nt">/&gt;</span>
+      <span class="nt">&lt;mj-accordion-title</span> <span class="na">font-family=</span><span class="s">"Roboto, Open Sans, Helvetica, Arial, sans-serif"</span> <span class="na">background-color=</span><span class="s">"#fff"</span> <span class="na">color=</span><span class="s">"#031017"</span> <span class="na">padding=</span><span class="s">"15px"</span> <span class="na">font-size=</span><span class="s">"18px"</span> <span class="nt">/&gt;</span>
+      <span class="nt">&lt;mj-accordion-text</span> <span class="na">font-family=</span><span class="s">"Open Sans, Helvetica, Arial, sans-serif"</span> <span class="na">background-color=</span><span class="s">"#fafafa"</span> <span class="na">padding=</span><span class="s">"15px"</span> <span class="na">color=</span><span class="s">"#505050"</span> <span class="na">font-size=</span><span class="s">"14px"</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;/mj-attributes&gt;</span>
+  <span class="nt">&lt;/mj-head&gt;</span>
+
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section</span> <span class="na">padding=</span><span class="s">"20px"</span> <span class="na">background-color=</span><span class="s">"#ffffff"</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;mj-column</span> <span class="na">background-color=</span><span class="s">"#dededd"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;mj-accordion&gt;</span>
+          <span class="nt">&lt;mj-accordion-element&gt;</span>
+            <span class="nt">&lt;mj-accordion-title&gt;</span>Why use an accordion?<span class="nt">&lt;/mj-accordion-title&gt;</span>
+            <span class="nt">&lt;mj-accordion-text&gt;</span>
+              <span class="nt">&lt;span</span> <span class="na">style=</span><span class="s">"line-height:20px"</span><span class="nt">&gt;</span>
+                Because emails with a lot of content are most of the time a very bad experience on mobile, mj-accordion comes handy when you want to deliver a lot of information in a concise way.
+              <span class="nt">&lt;/span&gt;</span>
+            <span class="nt">&lt;/mj-accordion-text&gt;</span>
+          <span class="nt">&lt;/mj-accordion-element&gt;</span>
+          <span class="nt">&lt;mj-accordion-element&gt;</span>
+            <span class="nt">&lt;mj-accordion-title&gt;</span>How it works<span class="nt">&lt;/mj-accordion-title&gt;</span>
+            <span class="nt">&lt;mj-accordion-text&gt;</span>
+              <span class="nt">&lt;span</span> <span class="na">style=</span><span class="s">"line-height:20px"</span><span class="nt">&gt;</span>
+                Content is stacked into tabs and users can expand them at will. If responsive styles are not supported (mostly on desktop clients), tabs are then expanded and your content is readable at once.
+              <span class="nt">&lt;/span&gt;</span>
+            <span class="nt">&lt;/mj-accordion-text&gt;</span>
+          <span class="nt">&lt;/mj-accordion-element&gt;</span>
+        <span class="nt">&lt;/mj-accordion&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/accordion">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="sexy" />
+        </a>
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>border</td>
+                <td>string</td>
+                <td>CSS border format</td>
+                <td>2px solid black</td>
+            </tr>
+            <tr>
+                <td>container-background-color</td>
+                <td>n/a</td>
+                <td>background-color of the cell</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>font-family</td>
+                <td>n/a</td>
+                <td>font</td>
+                <td>Ubuntu, Helvetica, Arial, sans-serif</td>
+            </tr>
+            <tr>
+                <td>icon-align</td>
+                <td>n/a</td>
+                <td>icon alignment</td>
+                <td>middle</td>
+            </tr>
+            <tr>
+                <td>icon-height</td>
+                <td>px</td>
+                <td>icon width</td>
+                <td>32px</td>
+            </tr>
+            <tr>
+                <td>icon-position</td>
+                <td>n/a</td>
+                <td>display icon left or right</td>
+                <td>right</td>
+            </tr>
+            <tr>
+                <td>icon-unwrapped-alt</td>
+                <td>n/a</td>
+                <td>alt text when accordion is unwrapped</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>icon-unwrapped-url</td>
+                <td>n/a</td>
+                <td>icon when accordion is unwrapped</td>
+                <td>https://i.imgur.com/w4uTygT.png</td>
+            </tr>
+            <tr>
+                <td>icon-width</td>
+                <td>px</td>
+                <td>icon height</td>
+                <td>32px</td>
+            </tr>
+            <tr>
+                <td>icon-wrapped-alt</td>
+                <td>n/a</td>
+                <td>alt text when accordion is wrapped</td>
+                <td>+</td>
+            </tr>
+            <tr>
+                <td>icon-wrapped-url</td>
+                <td>n/a</td>
+                <td>icon when accordion is wrapped</td>
+                <td>https://i.imgur.com/bIXv1bk.png</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>padding</td>
+                <td>10px 25px</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>padding bottom</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>padding left</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>padding right</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>padding top</td>
+                <td>n/a</td>
+            </tr>
+        </tbody>
+    </table>
+    <h3 id='mj-accordion-element'>mj-accordion-element</h3>
+    <p>Creates an accordion title/text pair.
+        An accordion can have any number of these pairs.</p>
+
+    <aside class="notice">
+        Inheritance applies between attributes supported in both `mj-accordion` and
+        `mj-accordion-element` unless `mj-accordion-element` overrides.
+    </aside>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>background-color</td>
+                <td>n/a</td>
+                <td>background color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border</td>
+                <td>n/a</td>
+                <td>border</td>
+                <td>affects each horizontal border in the accordion except the top one</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>font-family</td>
+                <td>n/a</td>
+                <td>font</td>
+                <td>Ubuntu, Helvetica, Arial, sans-serif</td>
+            </tr>
+            <tr>
+                <td>icon-align</td>
+                <td>n/a</td>
+                <td>icon alignment</td>
+                <td>middle</td>
+            </tr>
+            <tr>
+                <td>icon-height</td>
+                <td>n/a</td>
+                <td>icon width</td>
+                <td>32px</td>
+            </tr>
+            <tr>
+                <td>icon-position</td>
+                <td>n/a</td>
+                <td>display icon left or right</td>
+                <td>right</td>
+            </tr>
+            <tr>
+                <td>icon-unwrapped-alt</td>
+                <td>n/a</td>
+                <td>alt text when accordion is unwrapped</td>
+                <td>-</td>
+            </tr>
+            <tr>
+                <td>icon-unwrapped-url</td>
+                <td>n/a</td>
+                <td>icon when accordion is unwrapped</td>
+                <td>https://i.imgur.com/w4uTygT.png</td>
+            </tr>
+            <tr>
+                <td>icon-width</td>
+                <td>n/a</td>
+                <td>icon height</td>
+                <td>32px</td>
+            </tr>
+            <tr>
+                <td>icon-wrapped-alt</td>
+                <td>n/a</td>
+                <td>alt text when accordion is wrapped</td>
+                <td>+</td>
+            </tr>
+            <tr>
+                <td>icon-wrapped-url</td>
+                <td>n/a</td>
+                <td>icon when accordion is wrapped</td>
+                <td>https://i.imgur.com/bIXv1bk.png</td>
+            </tr>
+        </tbody>
+    </table>
+    <h3 id='mj-accordion-title'>mj-accordion-title</h3>
+    <p>The title in a title/text pair.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>background-color</td>
+                <td>n/a</td>
+                <td>background color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>color</td>
+                <td>n/a</td>
+                <td>text color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>font-family</td>
+                <td>n/a</td>
+                <td>font family</td>
+                <td>Ubuntu, Helvetica, Arial, sans-serif</td>
+            </tr>
+            <tr>
+                <td>font-size</td>
+                <td>px</td>
+                <td>font size</td>
+                <td>13px</td>
+            </tr>
+            <tr>
+                <td>font-weight</td>
+                <td>string</td>
+                <td>text thickness</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>padding</td>
+                <td>16px</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>padding bottom</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>padding left</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>padding right</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>padding top</td>
+                <td>n/a</td>
+            </tr>
+        </tbody>
+    </table>
+    <h3 id='mj-accordion-text'>mj-accordion-text</h3>
+    <p>The text in a title/text pair.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>background-color</td>
+                <td>n/a</td>
+                <td>background color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>color</td>
+                <td>n/a</td>
+                <td>text color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>font-family</td>
+                <td>n/a</td>
+                <td>font family</td>
+                <td>Ubuntu, Helvetica, Arial, sans-serif</td>
+            </tr>
+            <tr>
+                <td>font-size</td>
+                <td>px</td>
+                <td>font size</td>
+                <td>13px</td>
+            </tr>
+            <tr>
+                <td>font-weight</td>
+                <td>string</td>
+                <td>text thickness</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>letter-spacing</td>
+                <td>px,em</td>
+                <td>letter spacing</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>line-height</td>
+                <td>px</td>
+                <td>space between the lines</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>padding</td>
+                <td>16px</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>padding bottom</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>padding left</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>padding right</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>padding top</td>
+                <td>n/a</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-button'>mj-button</h2>
+    <p style="text-align: center;">
+        <img src="https://static.mailjet.com/mjml-website/documentation/button-example.png" alt="desktop"
+            width="150px" />
+    </p>
+
+    <p>Displays a customizable button.</p>
+
+    <aside class="notice">
+        The `mj-button` won't be fully clickable because of client support.
+        See discussion at
+        <a href="https://github.com/mjmlio/mjml/issues/359">Issue #359</a>.
+    </aside>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-button</span> <span class="na">font-family=</span><span class="s">"Helvetica"</span> <span class="na">background-color=</span><span class="s">"#f45e43"</span> <span class="na">color=</span><span class="s">"white"</span><span class="nt">&gt;</span>
+          Don't click me!
+         <span class="nt">&lt;/mj-button&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/button">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <aside class="notice">
+        `mj-button` is an "ending tag", which means it can contain HTML code which will be left as it is, so it
+        can contain HTML tags with attributes, but it cannot contain other MJML components. More information
+        about ending tags <a href="#ending-tags">in this section</a>.
+    </aside>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>align</td>
+                <td>string</td>
+                <td>horizontal alignment</td>
+                <td>center</td>
+            </tr>
+            <tr>
+                <td>background-color</td>
+                <td>color</td>
+                <td>button background-color</td>
+                <td>#414141</td>
+            </tr>
+            <tr>
+                <td>border</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>border-bottom</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-left</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-radius</td>
+                <td>px</td>
+                <td>border radius</td>
+                <td>3px</td>
+            </tr>
+            <tr>
+                <td>border-right</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-top</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>color</td>
+                <td>color</td>
+                <td>text color</td>
+                <td>#ffffff</td>
+            </tr>
+            <tr>
+                <td>container-background-color</td>
+                <td>color</td>
+                <td>button container background color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>font-family</td>
+                <td>string</td>
+                <td>font name</td>
+                <td>Ubuntu, Helvetica, Arial, sans-serif</td>
+            </tr>
+            <tr>
+                <td>font-size</td>
+                <td>px</td>
+                <td>text size</td>
+                <td>13px</td>
+            </tr>
+            <tr>
+                <td>font-style</td>
+                <td>string</td>
+                <td>normal/italic/oblique</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>font-weight</td>
+                <td>number</td>
+                <td>text thickness</td>
+                <td>normal</td>
+            </tr>
+            <tr>
+                <td>height</td>
+                <td>px</td>
+                <td>button height</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>href</td>
+                <td>link</td>
+                <td>link to be triggered when the button is clicked</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>inner-padding</td>
+                <td>px</td>
+                <td>inner button padding</td>
+                <td>10px 25px</td>
+            </tr>
+            <tr>
+                <td>letter-spacing</td>
+                <td>px,em</td>
+                <td>letter-spacing</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>line-height</td>
+                <td>px/%/none</td>
+                <td>line-height on link</td>
+                <td>120%</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>supports up to 4 parameters</td>
+                <td>10px 25px</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>bottom offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>left offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>right offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>top offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>rel</td>
+                <td>string</td>
+                <td>specify the rel attribute for the button link</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>target</td>
+                <td>string</td>
+                <td>specify the target attribute for the button link</td>
+                <td>_blank</td>
+            </tr>
+            <tr>
+                <td>text-align</td>
+                <td>string</td>
+                <td>text-align button content</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>text-decoration</td>
+                <td>string</td>
+                <td>underline/overline/none</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>text-transform</td>
+                <td>string</td>
+                <td>capitalize/uppercase/lowercase</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>title</td>
+                <td>string</td>
+                <td>tooltip &amp; accessibility</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>vertical-align</td>
+                <td>string</td>
+                <td>vertical alignment</td>
+                <td>middle</td>
+            </tr>
+            <tr>
+                <td>width</td>
+                <td>px</td>
+                <td>button width</td>
+                <td>n/a</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-carousel'>mj-carousel</h2>
+    <p style="text-align: center;">
+        <img src="https://static.mailjet.com/mjml-website/documentation/carousel-example.gif" alt="desktop" />
+    </p>
+
+    <p><code>mj-carousel</code> displays a gallery of images or &quot;carousel&quot;. Readers can interact by
+        hovering and clicking on thumbnails depending on the email client they use.</p>
+
+    <p>This component enables you to set the styles of the carousel elements.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-carousel&gt;</span>
+          <span class="nt">&lt;mj-carousel-image</span> <span class="na">src=</span><span class="s">"https://static.mailjet.com/mjml-website/documentation/carousel-1.jpg"</span> <span class="nt">/&gt;</span>
+          <span class="nt">&lt;mj-carousel-image</span> <span class="na">src=</span><span class="s">"https://static.mailjet.com/mjml-website/documentation/carousel-2.jpg"</span> <span class="nt">/&gt;</span>
+          <span class="nt">&lt;mj-carousel-image</span> <span class="na">src=</span><span class="s">"https://static.mailjet.com/mjml-website/documentation/carousel-3.jpg"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;/mj-carousel&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/carousel">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="sexy" />
+        </a>
+    </p>
+
+    <aside class="notice">
+        `mj-carousel-image` is an "ending tag", which means it can contain HTML code which will be left as it
+        is, so it can contain HTML tags with attributes, but it cannot contain other MJML components. More
+        information about ending tags <a href="#ending-tags">in this section</a>.
+    </aside>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>align</td>
+                <td>string</td>
+                <td>horizontal alignment</td>
+                <td>center</td>
+            </tr>
+            <tr>
+                <td>container-background-color</td>
+                <td>string</td>
+                <td>column background color</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>border-radius</td>
+                <td>px</td>
+                <td>border radius</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>icon-width</td>
+                <td>px</td>
+                <td>width of the icons on left and right of the main image</td>
+                <td>44px</td>
+            </tr>
+            <tr>
+                <td>left-icon</td>
+                <td>url</td>
+                <td>icon on the left of the main image</td>
+                <td>https://i.imgur.com/xTh3hln.png</td>
+            </tr>
+            <tr>
+                <td>right-icon</td>
+                <td>url</td>
+                <td>icon on the right of the main image</td>
+                <td>https://i.imgur.com/os7o9kz.png</td>
+            </tr>
+            <tr>
+                <td>tb-border</td>
+                <td>css border format</td>
+                <td>border of the thumbnails</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>tb-border-radius</td>
+                <td>px</td>
+                <td>border-radius of the thumbnails</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>tb-hover-border-color</td>
+                <td>string</td>
+                <td>css border color of the hovered thumbnail</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>tb-selected-border-color</td>
+                <td>string</td>
+                <td>css border color of the selected thumbnail</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>tb-width</td>
+                <td>px</td>
+                <td>thumbnail width</td>
+                <td>null</td>
+            </tr>
+            <tr>
+                <td>thumbnails</td>
+                <td>String</td>
+                <td>display or not the thumbnails (visible</td>
+                <td>hidden)</td>
+            </tr>
+        </tbody>
+    </table>
+    <h3 id='mj-carousel-image'>mj-carousel-image</h3>
+    <p>This component enables you to add and style the images in the carousel.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>alt</td>
+                <td>string</td>
+                <td>image description</td>
+                <td>&#39;&#39;</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>href</td>
+                <td>url</td>
+                <td>link to redirect to on click</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>rel</td>
+                <td>string</td>
+                <td>specify the rel attribute</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>src</td>
+                <td>url</td>
+                <td>image source</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>target</td>
+                <td>string</td>
+                <td>link target on click</td>
+                <td>_blank</td>
+            </tr>
+            <tr>
+                <td>thumbnails-src</td>
+                <td>url</td>
+                <td>image source to have a thumbnail different than the image it&#39;s linked to</td>
+                <td>null</td>
+            </tr>
+            <tr>
+                <td>title</td>
+                <td>string</td>
+                <td>tooltip &amp; accessibility</td>
+                <td>n/a</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-column'>mj-column</h2>
+    <p>Columns enable you to horizontally organize the content within your sections. They must be located under
+        <code>mj-section</code> tags in order to be considered by the engine.
+        To be responsive, columns are expressed in terms of percentage.
+    </p>
+
+    <aside class="notice">
+        The sum of columns in a section cannot be greater than
+        the width of the parent `mj-section` (or 100%).
+    </aside>
+
+    <p>Every single column has to contain something because they are responsive containers, and will be
+        vertically stacked on a mobile view. Any standard component, or component that you have defined and
+        registered, can be placed within a column – except <code>mj-column</code> or <code>mj-section</code>
+        elements.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="c">&lt;!-- Your first column --&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="c">&lt;!-- Your second column --&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/column">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <aside class="notice">
+        Columns are meant to be used as a container for your content. They must not be used as offset. Any
+        mj-element included in a column will have a width equivalent to 100% of this column's width.
+    </aside>
+
+    <aside class="warning">
+        Columns cannot be nested into columns, and sections cannot be nested into columns as well.
+    </aside>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default attributes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>background-color</td>
+                <td>color</td>
+                <td>background color for a column</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>inner-background-color</td>
+                <td>color</td>
+                <td>requires: a padding, inner background color for column</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>border-bottom</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-left</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-right</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-top</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-radius</td>
+                <td>percent/px</td>
+                <td>border radius</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>inner-border</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>inner-border-bottom</td>
+                <td>string</td>
+                <td>css border format ; requires a padding</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>inner-border-left</td>
+                <td>string</td>
+                <td>css border format ; requires a padding</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>inner-border-right</td>
+                <td>string</td>
+                <td>css border format ; requires a padding</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>inner-border-top</td>
+                <td>string</td>
+                <td>css border format ; requires a padding</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>inner-border-radius</td>
+                <td>percent/px</td>
+                <td>border radius ; requires a padding</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>width</td>
+                <td>percent/px</td>
+                <td>column width</td>
+                <td>(100 / number of non-raw elements in section)%</td>
+            </tr>
+            <tr>
+                <td>vertical-align</td>
+                <td>string</td>
+                <td>middle/top/bottom (note: middle works only when adjacent mj-column is also set to middle)
+                </td>
+                <td>top</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>supports up to 4 parameters</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>section top offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>section bottom offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>section left offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>section right offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-divider'>mj-divider</h2>
+    <p>Displays a horizontal divider that can be customized like a HTML border.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-divider</span> <span class="na">border-width=</span><span class="s">"1px"</span> <span class="na">border-style=</span><span class="s">"dashed"</span> <span class="na">border-color=</span><span class="s">"lightgrey"</span> <span class="nt">/&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/divider">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>align</td>
+                <td>string</td>
+                <td>left/right/center</td>
+                <td>center</td>
+            </tr>
+            <tr>
+                <td>border-color</td>
+                <td>color</td>
+                <td>divider color</td>
+                <td>#000000</td>
+            </tr>
+            <tr>
+                <td>border-style</td>
+                <td>string</td>
+                <td>dashed/dotted/solid</td>
+                <td>solid</td>
+            </tr>
+            <tr>
+                <td>border-width</td>
+                <td>px</td>
+                <td>divider&#39;s border width</td>
+                <td>4px</td>
+            </tr>
+            <tr>
+                <td>container-background-color</td>
+                <td>color</td>
+                <td>inner element background color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>supports up to 4 parameters</td>
+                <td>10px 25px</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>bottom offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>left offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>right offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>top offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>width</td>
+                <td>px/percent</td>
+                <td>divider width</td>
+                <td>100%</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-group'>mj-group</h2>
+    <p style="text-align: center;">
+        Desktop<br />
+        <img src="https://static.mailjet.com/mjml-website/documentation/group-example-1.png"
+            alt="easy and quick; responsive" />
+    </p>
+
+    <p style="text-align: center;">
+        Mobile<br />
+        <img src="https://static.mailjet.com/mjml-website/documentation/group-example-2.png"
+            alt="easy and quick; responsive" />
+    </p>
+
+    <p>mj-group allows you to prevent columns from stacking on mobile. To do so, wrap the columns inside a
+        <code>mj-group</code> tag, so they&#39;ll stay side by side on mobile.
+    </p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-group&gt;</span>
+        <span class="nt">&lt;mj-column&gt;</span>
+          <span class="nt">&lt;mj-image</span> <span class="na">width=</span><span class="s">"137px"</span> <span class="na">height=</span><span class="s">"185px"</span> <span class="na">padding=</span><span class="s">"0"</span> <span class="na">src=</span><span class="s">"https://static.mailjet.com/mjml-website/documentation/group-1.png"</span> <span class="nt">/&gt;</span>
+          <span class="nt">&lt;mj-text</span> <span class="na">align=</span><span class="s">"center"</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;h2&gt;</span>Easy and quick<span class="nt">&lt;/h2&gt;</span>
+            <span class="nt">&lt;p&gt;</span>Write less code, save time and code more efficiently with MJML’s semantic syntax.<span class="nt">&lt;/p&gt;</span>
+          <span class="nt">&lt;/mj-text&gt;</span>
+        <span class="nt">&lt;/mj-column&gt;</span>
+        <span class="nt">&lt;mj-column&gt;</span>
+          <span class="nt">&lt;mj-image</span> <span class="na">width=</span><span class="s">"166px"</span> <span class="na">height=</span><span class="s">"185px"</span> <span class="na">padding=</span><span class="s">"0"</span> <span class="na">src=</span><span class="s">"https://static.mailjet.com/mjml-website/documentation/group-2.png"</span> <span class="nt">/&gt;</span>
+          <span class="nt">&lt;mj-text</span> <span class="na">align=</span><span class="s">"center"</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;h2&gt;</span>Responsive<span class="nt">&lt;/h2&gt;</span>
+            <span class="nt">&lt;p&gt;</span>MJML is responsive by design on most-popular email clients, even Outlook.<span class="nt">&lt;/p&gt;</span>
+          <span class="nt">&lt;/mj-text&gt;</span>
+        <span class="nt">&lt;/mj-column&gt;</span>
+      <span class="nt">&lt;/mj-group&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/group"><img width="100px"
+                src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" /></a>
+    </p>
+
+    <aside class="notice">
+        Column inside a group must have a width in percentage, not in pixel
+    </aside>
+
+    <aside class="notice">
+        You can have both column and group inside a Section
+    </aside>
+
+    <aside class="notice">
+        <b>iOS 9 Issue:</b> If you use a HTML beautifier for MJML output, iOS9 will render your columns inside a
+        mj-group as stacked. On the output HTML, remove the <b>blank space</b> between the two columns inside a
+        mj-group.
+    </aside>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default attributes</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>width</td>
+                <td>percent/px</td>
+                <td>group width</td>
+                <td>(100 / number of non-raw elements in section)%</td>
+            </tr>
+            <tr>
+                <td>vertical-align</td>
+                <td>string</td>
+                <td>middle/top/bottom</td>
+                <td>top</td>
+            </tr>
+            <tr>
+                <td>background-color</td>
+                <td>string</td>
+                <td>background color for a group</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>direction</td>
+                <td>ltr / rtl</td>
+                <td>set the display order of direct children</td>
+                <td>ltr</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-hero'>mj-hero</h2>
+    <p>This element displays a hero image.
+        It behaves like an <code>mj-section</code> with a single <code>mj-column</code>.</p>
+
+    <p><code>background-height</code> and <code>background-width</code> attributes are mandatory.</p>
+
+    <p>It&#39;s best to use an image with width the same as the <code>mj-body</code> width
+        (<code>width=&quot;600px&quot;</code> by default).
+        For better results, it&#39;s best to use an image with height the same or larger
+        than the <code>height</code> of <code>mj-hero</code>.</p>
+
+    <p>Use <code>background-color</code> to provide a fallback color
+        in case an email client doesn&#39;t support <code>background-url</code>.</p>
+
+    <aside class="notice">
+        The "height" attribute is required only for 'mode="fixed-height"'.
+    </aside>
+
+    <p>Fixed height</p>
+
+    <p style="text-align: center;">
+        <img src="https://static.mailjet.com/mjml-website/documentation/hero-example-1.png"
+            alt="demo background picture with fixed height" />
+    </p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-hero</span>
+      <span class="na">mode=</span><span class="s">"fixed-height"</span>
+      <span class="na">height=</span><span class="s">"469px"</span>
+      <span class="na">background-width=</span><span class="s">"600px"</span>
+      <span class="na">background-height=</span><span class="s">"469px"</span>
+      <span class="na">background-url=</span>
+          <span class="s">"https://static.mailjet.com/mjml-website/documentation/hero.jpg"</span>
+      <span class="na">background-color=</span><span class="s">"#2a3448"</span>
+      <span class="na">padding=</span><span class="s">"100px 0px"</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;mj-text</span>
+        <span class="na">padding=</span><span class="s">"20px"</span>
+        <span class="na">color=</span><span class="s">"#ffffff"</span>
+        <span class="na">font-family=</span><span class="s">"Helvetica"</span>
+        <span class="na">align=</span><span class="s">"center"</span>
+        <span class="na">font-size=</span><span class="s">"45px"</span>
+        <span class="na">line-height=</span><span class="s">"45px"</span>
+        <span class="na">font-weight=</span><span class="s">"900"</span><span class="nt">&gt;</span>
+        GO TO SPACE
+      <span class="nt">&lt;/mj-text&gt;</span>
+      <span class="nt">&lt;mj-button</span> <span class="na">href=</span><span class="s">"https://mjml.io/"</span> <span class="na">align=</span><span class="s">"center"</span><span class="nt">&gt;</span>
+        ORDER YOUR TICKET NOW
+      <span class="nt">&lt;/mj-button&gt;</span>
+    <span class="nt">&lt;/mj-hero&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/hero">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+    </p>
+
+    <p>Fluid height</p>
+
+    <p style="text-align: center;">
+        <img src="https://static.mailjet.com/mjml-website/documentation/hero-example-2.png"
+            alt="demo background picture with fixed height" />
+    </p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-hero</span>
+      <span class="na">mode=</span><span class="s">"fluid-height"</span>
+      <span class="na">background-width=</span><span class="s">"600px"</span>
+      <span class="na">background-height=</span><span class="s">"469px"</span>
+      <span class="na">background-url=</span>
+          <span class="s">"https://static.mailjet.com/mjml-website/documentation/hero.jpg"</span>
+      <span class="na">background-color=</span><span class="s">"#2a3448"</span>
+      <span class="na">padding=</span><span class="s">"100px 0px"</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;mj-text</span>
+        <span class="na">padding=</span><span class="s">"20px"</span>
+        <span class="na">color=</span><span class="s">"#ffffff"</span>
+        <span class="na">font-family=</span><span class="s">"Helvetica"</span>
+        <span class="na">align=</span><span class="s">"center"</span>
+        <span class="na">font-size=</span><span class="s">"45px"</span>
+        <span class="na">line-height=</span><span class="s">"45px"</span>
+        <span class="na">font-weight=</span><span class="s">"900"</span><span class="nt">&gt;</span>
+        GO TO SPACE
+      <span class="nt">&lt;/mj-text&gt;</span>
+      <span class="nt">&lt;mj-button</span> <span class="na">href=</span><span class="s">"https://mjml.io/"</span> <span class="na">align=</span><span class="s">"center"</span><span class="nt">&gt;</span>
+        ORDER YOUR TICKET NOW
+      <span class="nt">&lt;/mj-button&gt;</span>
+    <span class="nt">&lt;/mj-hero&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/hero/1">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>background-color</td>
+                <td>color</td>
+                <td>hero background color</td>
+                <td>#ffffff</td>
+            </tr>
+            <tr>
+                <td>background-height</td>
+                <td>px</td>
+                <td>height of the image used, mandatory</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>background-position</td>
+                <td>top/center/bottom left/center/right</td>
+                <td>background image position</td>
+                <td>center center</td>
+            </tr>
+            <tr>
+                <td>background-url</td>
+                <td>url</td>
+                <td>absolute background url</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>background-width</td>
+                <td>px</td>
+                <td>width of the image used, mandatory</td>
+                <td>parent element width</td>
+            </tr>
+            <tr>
+                <td>border-radius</td>
+                <td>px</td>
+                <td>border radius</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>height</td>
+                <td>px</td>
+                <td>hero section height (required for fixed-height mode)</td>
+                <td>0px</td>
+            </tr>
+            <tr>
+                <td>mode</td>
+                <td>fluid-height/fixed-height</td>
+                <td>choose if the height is fixed based on the height attribute or fluid</td>
+                <td>fluid-height</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>supports up to 4 parameters</td>
+                <td>0px</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>bottom offset</td>
+                <td>0px</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>left offset</td>
+                <td>0px</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>right offset</td>
+                <td>0px</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>top offset</td>
+                <td>0px</td>
+            </tr>
+            <tr>
+                <td>vertical-align</td>
+                <td>top/middle/bottom</td>
+                <td>content vertical alignment</td>
+                <td>top</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-image'>mj-image</h2>
+    <p>Displays a responsive image in your email. It is similar to the HTML <code>&lt;img /&gt;</code> tag.
+        Note that if no width is provided, the image will use the parent column width.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-image</span> <span class="na">width=</span><span class="s">"300px"</span> <span class="na">src=</span><span class="s">"https://static.mailjet.com/mjml-website/documentation/image.png"</span> <span class="nt">/&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/image">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>align</td>
+                <td>position</td>
+                <td>image alignment</td>
+                <td>center</td>
+            </tr>
+            <tr>
+                <td>alt</td>
+                <td>string</td>
+                <td>image description</td>
+                <td>&#39;&#39;</td>
+            </tr>
+            <tr>
+                <td>border</td>
+                <td>string</td>
+                <td>css border definition</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>border-top</td>
+                <td>string</td>
+                <td>css border definition</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>border-bottom</td>
+                <td>string</td>
+                <td>css border definition</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>border-left</td>
+                <td>string</td>
+                <td>css border definition</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>border-right</td>
+                <td>string</td>
+                <td>css border definition</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>border-radius</td>
+                <td>px</td>
+                <td>border radius</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>container-background-color</td>
+                <td>color</td>
+                <td>inner element background color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>fluid-on-mobile</td>
+                <td>string</td>
+                <td>if &quot;true&quot;, will be full width on mobile even if width is set</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>height</td>
+                <td>px</td>
+                <td>image height</td>
+                <td>auto</td>
+            </tr>
+            <tr>
+                <td>href</td>
+                <td>url</td>
+                <td>link to redirect to on click</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>name</td>
+                <td>string</td>
+                <td>specify the link name attribute</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>supports up to 4 parameters</td>
+                <td>10px 25px</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>bottom offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>left offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>right offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>top offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>rel</td>
+                <td>string</td>
+                <td>specify the rel attribute</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>sizes</td>
+                <td>media query &amp; width</td>
+                <td>set width based on query</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>src</td>
+                <td>url</td>
+                <td>image source</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>srcset</td>
+                <td>url &amp; width</td>
+                <td>enables to set a different image source based on the viewport</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>target</td>
+                <td>string</td>
+                <td>link target on click</td>
+                <td>_blank</td>
+            </tr>
+            <tr>
+                <td>title</td>
+                <td>string</td>
+                <td>tooltip &amp; accessibility</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>usemap</td>
+                <td>string</td>
+                <td>reference to image map, be careful, it isn&#39;t supported everywhere</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>width</td>
+                <td>px</td>
+                <td>image width</td>
+                <td>parent width</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-navbar'>mj-navbar</h2>
+    <p style="text-align: center;">
+        <img src="https://static.mailjet.com/mjml-website/documentation/navbar-example.png"
+            alt="example desktop width navbar" width="800px" />
+    </p>
+
+    <p>Displays a menu for navigation with an optional hamburger mode for mobile devices.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section</span> <span class="na">background-color=</span><span class="s">"#ef6451"</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-navbar</span> <span class="na">base-url=</span><span class="s">"https://mjml.io"</span> <span class="na">hamburger=</span><span class="s">"hamburger"</span> <span class="na">ico-color=</span><span class="s">"#ffffff"</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;mj-navbar-link</span> <span class="na">href=</span><span class="s">"/gettings-started-onboard"</span> <span class="na">color=</span><span class="s">"#ffffff"</span><span class="nt">&gt;</span>Getting started<span class="nt">&lt;/mj-navbar-link&gt;</span>
+            <span class="nt">&lt;mj-navbar-link</span> <span class="na">href=</span><span class="s">"/try-it-live"</span> <span class="na">color=</span><span class="s">"#ffffff"</span><span class="nt">&gt;</span>Try it live<span class="nt">&lt;/mj-navbar-link&gt;</span>
+            <span class="nt">&lt;mj-navbar-link</span> <span class="na">href=</span><span class="s">"/templates"</span> <span class="na">color=</span><span class="s">"#ffffff"</span><span class="nt">&gt;</span>Templates<span class="nt">&lt;/mj-navbar-link&gt;</span>
+            <span class="nt">&lt;mj-navbar-link</span> <span class="na">href=</span><span class="s">"/components"</span> <span class="na">color=</span><span class="s">"#ffffff"</span><span class="nt">&gt;</span>Components<span class="nt">&lt;/mj-navbar-link&gt;</span>
+        <span class="nt">&lt;/mj-navbar&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a target="_blank" href="https://mjml.io/try-it-live/components/navbar">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+    <h3 id='mj-navbar-2'>mj-navbar</h3>
+    <p>Individual links of the menu should be wrapped inside mj-navbar.</p>
+
+    <p>Standard Desktop:</p>
+
+    <p style="text-align: center;">
+        <img src="https://static.mailjet.com/mjml-website/documentation/navbar-example.png"
+            alt="example desktop width navbar" width="800px" />
+    </p>
+
+    <p>Standard Mobile:</p>
+
+    <p style="text-align: center;">
+        <img src="https://static.mailjet.com/mjml-website/documentation/navbar-mobile.png"
+            alt="example mobile width navbar" width="318px" />
+    </p>
+
+    <p>Mode hamburger enabled:</p>
+
+    <p style="text-align: center;">
+        <img src="https://static.mailjet.com/mjml-website/documentation/navbar-hamburger.gif"
+            alt="hamburger mode animation shows menu expansion after clicking hamburger icon" width="309px" />
+    </p>
+
+    <aside class="notice">
+        The "hamburger" feature only work on mobile device with all iOS mail client, for others mail clients the
+        render is performed on an normal way, the links are displayed inline and the hamburger is not visible.
+    </aside>
+
+    <aside class="notice">
+        All the attributes prefixed with <code>ico-</code> help to customize the hamburger icon. They only work
+        with the hamburger mode enabled.
+    </aside>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>align</td>
+                <td>string</td>
+                <td>align content left/center/right</td>
+                <td>center</td>
+            </tr>
+            <tr>
+                <td>base url</td>
+                <td>string</td>
+                <td>base url for children components</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>hamburger</td>
+                <td>string</td>
+                <td>activate the hamburger navigation on mobile if the value is hamburger</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>ico-align</td>
+                <td>string</td>
+                <td>hamburger icon alignment, left/center/right (hamburger mode required)</td>
+                <td>center</td>
+            </tr>
+            <tr>
+                <td>ico-close</td>
+                <td>ASCII code decimal</td>
+                <td>char code for a custom close icon (hamburger mode required)</td>
+                <td>8855</td>
+            </tr>
+            <tr>
+                <td>ico-color</td>
+                <td>color format</td>
+                <td>hamburger icon color (hamburger mode required)</td>
+                <td>#000000</td>
+            </tr>
+            <tr>
+                <td>ico-font-family</td>
+                <td>string</td>
+                <td>hamburger icon font (only on hamburger mode)</td>
+                <td>Ubuntu, Helvetica, Arial, sans-serif</td>
+            </tr>
+            <tr>
+                <td>ico-font-size</td>
+                <td>px</td>
+                <td>hamburger icon size (hamburger mode required)</td>
+                <td>30px</td>
+            </tr>
+            <tr>
+                <td>ico-line-height</td>
+                <td>px</td>
+                <td>hamburger icon line height (hamburger mode required)</td>
+                <td>30px</td>
+            </tr>
+            <tr>
+                <td>ico-open</td>
+                <td>ASCII code decimal</td>
+                <td>char code for a custom open icon (hamburger mode required)</td>
+                <td>9776</td>
+            </tr>
+            <tr>
+                <td>ico-padding</td>
+                <td>px</td>
+                <td>hamburger icon padding, supports up to 4 parameters (hamburger mode required)</td>
+                <td>10px</td>
+            </tr>
+            <tr>
+                <td>ico-padding-bottom</td>
+                <td>px</td>
+                <td>hamburger icon bottom offset (hamburger mode required)</td>
+                <td>10px</td>
+            </tr>
+            <tr>
+                <td>ico-padding-left</td>
+                <td>px</td>
+                <td>hamburger icon left offset (hamburger mode required)</td>
+                <td>10px</td>
+            </tr>
+            <tr>
+                <td>ico-padding-right</td>
+                <td>px</td>
+                <td>hamburger icon right offset (hamburger mode required)</td>
+                <td>10px</td>
+            </tr>
+            <tr>
+                <td>ico-padding-top</td>
+                <td>px</td>
+                <td>hamburger icon top offset (hamburger mode required)</td>
+                <td>10px</td>
+            </tr>
+            <tr>
+                <td>ico-text-decoration</td>
+                <td>string</td>
+                <td>hamburger icon text decoration none/underline/overline/line-through (hamburger mode
+                    required)</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>ico-text-transform</td>
+                <td>string</td>
+                <td>hamburger icon text transformation none/capitalize/uppercase/lowercase (hamburger mode
+                    required)</td>
+                <td>none</td>
+            </tr>
+        </tbody>
+    </table>
+    <h3 id='mj-navbar-link'>mj-navbar-link</h3>
+    <p>This component should be used to display an individual link in the navbar.</p>
+
+    <aside class="notice">
+        The mj-navbar-link component must be used inside a mj-navbar component only.
+    </aside>
+
+    <aside class="notice">
+        `mj-navbar-link` is an "ending tag", which means it can contain HTML code which will be left as it is,
+        so it can contain HTML tags with attributes, but it cannot contain other MJML components. More
+        information about ending tags <a href="#ending-tags">in this section</a>.
+    </aside>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>color</td>
+                <td>color</td>
+                <td>text color</td>
+                <td>#000000</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>font-family</td>
+                <td>string</td>
+                <td>font</td>
+                <td>Ubuntu, Helvetica, Arial, sans-serif</td>
+            </tr>
+            <tr>
+                <td>font-size</td>
+                <td>px</td>
+                <td>text size</td>
+                <td>13px</td>
+            </tr>
+            <tr>
+                <td>font-style</td>
+                <td>string</td>
+                <td>normal/italic/oblique</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>font-weight</td>
+                <td>number</td>
+                <td>text thickness</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>href</td>
+                <td>string</td>
+                <td>link to redirect to on click</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>letter-spacing</td>
+                <td>px,em</td>
+                <td>letter-spacing</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>line-height</td>
+                <td>px</td>
+                <td>space between the lines</td>
+                <td>22px</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>supports up to 4 parameters</td>
+                <td>15px 10px</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>bottom offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>left offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>right offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>top offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>rel</td>
+                <td>string</td>
+                <td>specify the rel attribute</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>target</td>
+                <td>string</td>
+                <td>link target on click</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>text-decoration</td>
+                <td>string</td>
+                <td>underline/overline/none</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>text-transform</td>
+                <td>string</td>
+                <td>capitalize/uppercase/lowercase/none</td>
+                <td>uppercase</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-raw'>mj-raw</h2>
+    <p>Displays raw HTML that is not going to be parsed by the MJML engine. Anything left inside this tag should
+        be raw, responsive HTML.
+        If placed inside <code>&lt;mj-head&gt;</code>, its content will be added at the end of the
+        <code>&lt;head&gt;</code>.
+    </p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-raw&gt;</span>
+      <span class="c">&lt;!-- Your content goes here --&gt;</span>
+    <span class="nt">&lt;/mj-raw&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a target="_blank" href="https://mjml.io/try-it-live/components/raw">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <p>If you use mj-raw to add templating language, and use the <code>minify</code> option, you might get a
+        <code>Parsing error</code>, especially when using the <code>&lt;</code> character. You can tell the
+        minifier to ignore some content by wrapping it between two <code>&lt;!-- htmlmin:ignore --&gt;</code>
+        tags.
+    </p>
+
+    <aside class="notice">
+        `mj-raw` is an "ending tag", which means it can contain HTML code which will be left as it is, so it can
+        contain HTML tags with attributes, but it cannot contain other MJML components. More information about
+        ending tags <a href="#ending-tags">in this section</a>.
+    </aside>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-raw&gt;</span>
+      <span class="c">&lt;!-- htmlmin:ignore --&gt;</span>{% if foo <span class="nt">&lt; 5</span> <span class="err">%}&lt;!--</span> <span class="err">htmlmin:ignore</span> <span class="err">--</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;/mj-raw&gt;</span>
+      <span class="c">&lt;!-- Some mjml section --&gt;</span>
+    <span class="nt">&lt;mj-raw&gt;</span>
+      {% endif %}
+    <span class="nt">&lt;/mj-raw&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p>One more possible use of mj-raw is to add text at the beginning of the generated html, before the
+        <code>&lt;!doctype html&gt;</code> line. For this you need to :
+        - put the mj-raw inside the <code>&lt;mjml&gt;</code> tag, outside of <code>mj-head</code> and
+        <code>mj-body</code>
+        - add this attribute on this mj-raw : <code>position=&quot;file-start&quot;</code>
+    </p>
+
+    <p>Note that if you put multiple lines in this mj-raw and use the minify option, these lines will be joined
+        into a single line by the minifier. To prevent this you can wrap the content in
+        <code>&lt;!-- htmlmin:ignore --&gt;</code> tags as explained above.
+    </p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-raw</span> <span class="na">position=</span><span class="s">"file-start"</span><span class="nt">&gt;</span>This will be added at the beginning of the file<span class="nt">&lt;/mj-raw&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="c">&lt;!-- Your content goes here --&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <h2 id='mj-section'>mj-section</h2>
+    <p>Sections are intended to be used as rows within your email.
+        They will be used to structure the layout.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section</span> <span class="na">full-width=</span><span class="s">"full-width"</span> <span class="na">background-color=</span><span class="s">"red"</span><span class="nt">&gt;</span>
+      <span class="c">&lt;!-- Your columns go here --&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/section">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <p>The <code>full-width</code> property will be used to manage the background width.
+        By default, it will be 600px. With the <code>full-width</code> property on, it will be
+        changed to 100%.</p>
+
+    <aside class="notice">
+        <b>Inverting the order in which columns display:</b> set the `direction` attribute to `rtl` to change
+        the order in which columns display on desktop. Because MJML is mobile-first, structure the columns in
+        the <b>order you want them to stack on mobile</b>, and use `direction` to change the order they display
+        <b>on desktop</b>.
+    </aside>
+
+    <aside class="warning">
+        Sections cannot nest in sections. Columns can nest in sections; all content must be in a column.
+    </aside>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>background-color</td>
+                <td>color</td>
+                <td>section color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>background-position</td>
+                <td>percent / &#39;left&#39;,&#39;top&#39;,... (2 values max)</td>
+                <td>css background position (see outlook limitations below)</td>
+                <td>top center</td>
+            </tr>
+            <tr>
+                <td>background-position-x</td>
+                <td>percent / keyword</td>
+                <td>css background position x</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>background-position-y</td>
+                <td>percent / keyword</td>
+                <td>css background position y</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>background-repeat</td>
+                <td>string</td>
+                <td>css background repeat</td>
+                <td>repeat</td>
+            </tr>
+            <tr>
+                <td>background-size</td>
+                <td>px/percent/&#39;cover&#39;/&#39;contain&#39;</td>
+                <td>css background size</td>
+                <td>auto</td>
+            </tr>
+            <tr>
+                <td>background-url</td>
+                <td>url</td>
+                <td>background url</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>border-bottom</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-left</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-radius</td>
+                <td>px</td>
+                <td>border radius</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-right</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-top</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>direction</td>
+                <td>ltr / rtl</td>
+                <td>set the display order of direct children</td>
+                <td>ltr</td>
+            </tr>
+            <tr>
+                <td>full-width</td>
+                <td>string</td>
+                <td>make the section full-width</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>supports up to 4 parameters</td>
+                <td>20px 0</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>section bottom offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>section left offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>section right offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>section top offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>text-align</td>
+                <td>string</td>
+                <td>css text-align</td>
+                <td>center</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <aside class="notice">
+        Limitations of background-images size and position on Outlook desktop :
+        - If background-size is not specified, no-repeat will be ignored on Outlook.
+        - If the specified size is a single attribute in percent, the height will be auto as in standard css. On
+        outlook, the image will never overflow the element, and it will be shrinked instead of being cropped
+        like on other clients.
+    </aside>
+    <h2 id='mj-social'>mj-social</h2>
+    <p style="text-align: center;">
+        <img src="https://static.mailjet.com/mjml-website/documentation/social-example.png" alt="desktop"
+            style="width: 250px;" />
+    </p>
+
+    <aside class="warning">
+        `mj-social-element`'s `name` attribute is a shortcut for some common social elements. <br />
+        You should avoid rely too much on this as those icons are hosted by Mailjet for their Email
+        Builder.<br />
+        Use <a href="#custom-social-element">custom element syntax instead.</a>
+    </aside>
+
+    <p>Displays calls-to-action for various social networks with their associated logo. You can add social
+        networks with the <code>mj-social-element</code> tag.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-social</span> <span class="na">font-size=</span><span class="s">"15px"</span> <span class="na">icon-size=</span><span class="s">"30px"</span> <span class="na">mode=</span><span class="s">"horizontal"</span><span class="nt">&gt;</span>
+          <span class="nt">&lt;mj-social-element</span> <span class="na">name=</span><span class="s">"facebook"</span> <span class="na">href=</span><span class="s">"https://mjml.io/"</span><span class="nt">&gt;</span>
+            Facebook
+          <span class="nt">&lt;/mj-social-element&gt;</span>
+          <span class="nt">&lt;mj-social-element</span> <span class="na">name=</span><span class="s">"google"</span> <span class="na">href=</span><span class="s">"https://mjml.io/"</span><span class="nt">&gt;</span>
+            Google
+          <span class="nt">&lt;/mj-social-element&gt;</span>
+          <span class="nt">&lt;mj-social-element</span> <span class="na">name=</span><span class="s">"twitter"</span> <span class="na">href=</span><span class="s">"https://mjml.io/"</span><span class="nt">&gt;</span>
+            Twitter
+          <span class="nt">&lt;/mj-social-element&gt;</span>
+          <span class="nt">&lt;mj-social-element</span> <span class="na">name=</span><span class="s">"x"</span> <span class="na">href=</span><span class="s">"https://mjml.io/"</span><span class="nt">&gt;</span>
+            X
+          <span class="nt">&lt;/mj-social-element&gt;</span>
+        <span class="nt">&lt;/mj-social&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/social">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <aside class="notice">
+        `mj-social-element` is an "ending tag", which means it can contain HTML code which will be left as it
+        is, so it can contain HTML tags with attributes, but it cannot contain other MJML components. More
+        information about ending tags <a href="#ending-tags">in this section</a>.
+    </aside>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>align</td>
+                <td>string</td>
+                <td>left/right/center</td>
+                <td>center</td>
+            </tr>
+            <tr>
+                <td>border-radius</td>
+                <td>px</td>
+                <td>border radius</td>
+                <td>3px</td>
+            </tr>
+            <tr>
+                <td>color</td>
+                <td>color</td>
+                <td>text color</td>
+                <td>#333333</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>container-background-color</td>
+                <td>color</td>
+                <td>inner element background color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>font-family</td>
+                <td>string</td>
+                <td>font name</td>
+                <td>Ubuntu, Helvetica, Arial, sans-serif</td>
+            </tr>
+            <tr>
+                <td>font-size</td>
+                <td>px/em</td>
+                <td>font size</td>
+                <td>13px</td>
+            </tr>
+            <tr>
+                <td>font-style</td>
+                <td>string</td>
+                <td>font style</td>
+                <td>normal</td>
+            </tr>
+            <tr>
+                <td>font-weight</td>
+                <td>string</td>
+                <td>font weight</td>
+                <td>normal</td>
+            </tr>
+            <tr>
+                <td>icon-height</td>
+                <td>percent/px</td>
+                <td>icon height, overrides icon-size</td>
+                <td>icon-size</td>
+            </tr>
+            <tr>
+                <td>icon-size</td>
+                <td>percent/px</td>
+                <td>icon size (width and height)</td>
+                <td>20px</td>
+            </tr>
+            <tr>
+                <td>inner-padding</td>
+                <td>px</td>
+                <td>social network surrounding padding</td>
+                <td>4px</td>
+            </tr>
+            <tr>
+                <td>line-height</td>
+                <td>percent/px</td>
+                <td>space between lines</td>
+                <td>22px</td>
+            </tr>
+            <tr>
+                <td>mode</td>
+                <td>string</td>
+                <td>vertical/horizontal</td>
+                <td>horizontal</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>supports up to 4 parameters</td>
+                <td>10px 25px</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>bottom offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>left offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>right offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>top offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>icon-padding</td>
+                <td>px</td>
+                <td>padding around the icons</td>
+                <td>0px</td>
+            </tr>
+            <tr>
+                <td>text-padding</td>
+                <td>px</td>
+                <td>padding around the texts</td>
+                <td>4px 4px 4px 0</td>
+            </tr>
+            <tr>
+                <td>text-decoration</td>
+                <td>string</td>
+                <td>underline/overline/none</td>
+                <td>none</td>
+            </tr>
+        </tbody>
+    </table>
+    <h3 id='mj-social-element'>mj-social-element</h3>
+    <p>This component enables you to display a given social network inside <code>mj-social</code>.
+        Note that default icons are transparent, which allows <code>background-color</code> to actually be the
+        icon color.</p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>align</td>
+                <td>string</td>
+                <td>left/right/center</td>
+                <td>center</td>
+            </tr>
+            <tr>
+                <td>alt</td>
+                <td>string</td>
+                <td>image alt attribute</td>
+                <td>&#39;&#39;</td>
+            </tr>
+            <tr>
+                <td>background-color</td>
+                <td>color</td>
+                <td>icon color</td>
+                <td>Each social <code>name</code> has its own default</td>
+            </tr>
+            <tr>
+                <td>border-radius</td>
+                <td>px</td>
+                <td>border radius</td>
+                <td>3px</td>
+            </tr>
+            <tr>
+                <td>color</td>
+                <td>color</td>
+                <td>text color</td>
+                <td>#333333</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>font-family</td>
+                <td>string</td>
+                <td>font name</td>
+                <td>Ubuntu, Helvetica, Arial, sans-serif</td>
+            </tr>
+            <tr>
+                <td>font-size</td>
+                <td>px/em</td>
+                <td>font size</td>
+                <td>13px</td>
+            </tr>
+            <tr>
+                <td>font-style</td>
+                <td>string</td>
+                <td>font style</td>
+                <td>normal</td>
+            </tr>
+            <tr>
+                <td>font-weight</td>
+                <td>string</td>
+                <td>font weight</td>
+                <td>normal</td>
+            </tr>
+            <tr>
+                <td>href</td>
+                <td>url</td>
+                <td>button redirection url</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>icon-height</td>
+                <td>percent/px</td>
+                <td>icon height, overrides icon-size</td>
+                <td>icon-size</td>
+            </tr>
+            <tr>
+                <td>icon-size</td>
+                <td>percent/px</td>
+                <td>icon size (width and height)</td>
+                <td>20px</td>
+            </tr>
+            <tr>
+                <td>line-height</td>
+                <td>percent/px</td>
+                <td>space between lines</td>
+                <td>22px</td>
+            </tr>
+            <tr>
+                <td>name</td>
+                <td>string</td>
+                <td>social network name, see supported list below</td>
+                <td>N/A</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>supports up to 4 parameters</td>
+                <td>4px</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>bottom offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>left offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>right offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>top offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>icon-padding</td>
+                <td>px</td>
+                <td>padding around the icon</td>
+                <td>0px</td>
+            </tr>
+            <tr>
+                <td>icon-position</td>
+                <td>string</td>
+                <td>left/right</td>
+                <td>right</td>
+            </tr>
+            <tr>
+                <td>text-padding</td>
+                <td>px</td>
+                <td>padding around the text</td>
+                <td>4px 4px 4px 0</td>
+            </tr>
+            <tr>
+                <td>sizes</td>
+                <td>media query &amp; width</td>
+                <td>set icon width based on query</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>src</td>
+                <td>url</td>
+                <td>image source</td>
+                <td>Each social <code>name</code> has its own default</td>
+            </tr>
+            <tr>
+                <td>srcset</td>
+                <td>url &amp; width</td>
+                <td>set a different image source based on the viewport</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>rel</td>
+                <td>string</td>
+                <td>specify the rel attribute for the link</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>target</td>
+                <td>string</td>
+                <td>link target</td>
+                <td>_blank</td>
+            </tr>
+            <tr>
+                <td>title</td>
+                <td>string</td>
+                <td>img title attribute</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>text-decoration</td>
+                <td>string</td>
+                <td>underline/overline/none</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>vertical-align</td>
+                <td>string</td>
+                <td>top/middle/bottom</td>
+                <td>middle</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>Supported networks with a share url:
+        - facebook
+        - twitter
+        - x
+        - google
+        - pinterest
+        - linkedin
+        - tumblr
+        - xing</p>
+
+    <p>Without a share url:
+        - github
+        - instagram
+        - web
+        - snapchat
+        - youtube
+        - vimeo
+        - medium
+        - soundcloud
+        - dribbble</p>
+
+    <p>When using a network with share url, the <code>href</code> attribute will be inserted in the share url
+        (i.e. <code>https://www.facebook.com/sharer/sharer.php?u=[[URL]]</code>). To keep your <code>href</code>
+        unchanged, add <code>-noshare</code> to the network name. Example :</p>
+
+    <p><code>
+&lt;mj-social-element name=&quot;twitter-noshare&quot; href=&quot;my-unchanged-url&quot;&gt;Twitter&lt;/mj-social-element&gt;
+</code></p>
+    <h3 id='custom-social-element'>Custom Social Element</h3>
+    <p>You can add any unsupported network like this:</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mj-social-element</span> <span class="na">href=</span><span class="s">"url"</span> <span class="na">background-color=</span><span class="s">"#FF00FF"</span> <span class="na">src=</span><span class="s">"path-to-your-icon"</span><span class="nt">&gt;</span>
+  Optional label
+<span class="nt">&lt;/mj-social-element&gt;</span>
+</code></pre>
+    <p>You can also use mj-social this way with no <code>href</code> attribute to make a simple list of inlined
+        images-texts.</p>
+    <h2 id='mj-spacer'>mj-spacer</h2>
+    <p>Displays a blank space.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-text&gt;</span>A first line of text<span class="nt">&lt;/mj-text&gt;</span>
+        <span class="nt">&lt;mj-spacer</span> <span class="na">height=</span><span class="s">"50px"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;mj-text&gt;</span>A second line of text<span class="nt">&lt;/mj-text&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/spacer">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>container-background-color</td>
+                <td>color</td>
+                <td>inner element background color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>height</td>
+                <td>px</td>
+                <td>spacer height</td>
+                <td>20px</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>supports up to 4 parameters</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>bottom offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>left offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>right offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>top offset</td>
+                <td>n/a</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-table'>mj-table</h2>
+    <p>This tag allows you to display table and filled it with data. It only accepts plain HTML.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-table&gt;</span>
+          <span class="nt">&lt;tr</span> <span class="na">style=</span><span class="s">"border-bottom:1px solid #ecedee;text-align:left;padding:15px 0;"</span><span class="nt">&gt;</span>
+            <span class="nt">&lt;th</span> <span class="na">style=</span><span class="s">"padding: 0 15px 0 0;"</span><span class="nt">&gt;</span>Year<span class="nt">&lt;/th&gt;</span>
+            <span class="nt">&lt;th</span> <span class="na">style=</span><span class="s">"padding: 0 15px;"</span><span class="nt">&gt;</span>Language<span class="nt">&lt;/th&gt;</span>
+            <span class="nt">&lt;th</span> <span class="na">style=</span><span class="s">"padding: 0 0 0 15px;"</span><span class="nt">&gt;</span>Inspired from<span class="nt">&lt;/th&gt;</span>
+          <span class="nt">&lt;/tr&gt;</span>
+          <span class="nt">&lt;tr&gt;</span>
+            <span class="nt">&lt;td</span> <span class="na">style=</span><span class="s">"padding: 0 15px 0 0;"</span><span class="nt">&gt;</span>1995<span class="nt">&lt;/td&gt;</span>
+            <span class="nt">&lt;td</span> <span class="na">style=</span><span class="s">"padding: 0 15px;"</span><span class="nt">&gt;</span>PHP<span class="nt">&lt;/td&gt;</span>
+            <span class="nt">&lt;td</span> <span class="na">style=</span><span class="s">"padding: 0 0 0 15px;"</span><span class="nt">&gt;</span>C, Shell Unix<span class="nt">&lt;/td&gt;</span>
+          <span class="nt">&lt;/tr&gt;</span>
+          <span class="nt">&lt;tr&gt;</span>
+            <span class="nt">&lt;td</span> <span class="na">style=</span><span class="s">"padding: 0 15px 0 0;"</span><span class="nt">&gt;</span>1995<span class="nt">&lt;/td&gt;</span>
+            <span class="nt">&lt;td</span> <span class="na">style=</span><span class="s">"padding: 0 15px;"</span><span class="nt">&gt;</span>JavaScript<span class="nt">&lt;/td&gt;</span>
+            <span class="nt">&lt;td</span> <span class="na">style=</span><span class="s">"padding: 0 0 0 15px;"</span><span class="nt">&gt;</span>Scheme, Self<span class="nt">&lt;/td&gt;</span>
+          <span class="nt">&lt;/tr&gt;</span>
+        <span class="nt">&lt;/mj-table&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/table">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <aside class="notice">
+        `mj-table` is an "ending tag", which means it can contain HTML code which will be left as it is, so it
+        can contain HTML tags with attributes, but it cannot contain other MJML components. In `mj-table`
+        specifically, you can put anything you would put in a `&lt;table&gt;` element. More information about
+        ending tags <a href="#ending-tags">in this section</a>.
+    </aside>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>align</td>
+                <td>left/right/center</td>
+                <td>self horizontal alignment</td>
+                <td>left</td>
+            </tr>
+            <tr>
+                <td>border</td>
+                <td>border</td>
+                <td>table external border</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>cellpadding</td>
+                <td>pixels</td>
+                <td>space between cells</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>cellspacing</td>
+                <td>pixels</td>
+                <td>space between cell and border</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>color</td>
+                <td>color</td>
+                <td>text header &amp; footer color</td>
+                <td>#000000</td>
+            </tr>
+            <tr>
+                <td>container-background-color</td>
+                <td>color</td>
+                <td>inner element background color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>font-family</td>
+                <td>string</td>
+                <td>font name</td>
+                <td>Ubuntu, Helvetica, Arial, sans-serif</td>
+            </tr>
+            <tr>
+                <td>font-size</td>
+                <td>px</td>
+                <td>font size</td>
+                <td>13px</td>
+            </tr>
+            <tr>
+                <td>line-height</td>
+                <td>percent/px</td>
+                <td>space between lines</td>
+                <td>22px</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>percent/px</td>
+                <td>supports up to 4 parameters</td>
+                <td>10px 25px</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>percent/px</td>
+                <td>bottom offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>percent/px</td>
+                <td>left offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>percent/px</td>
+                <td>right offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>percent/px</td>
+                <td>top offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>role</td>
+                <td>none/presentation</td>
+                <td>specify the role attribute</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>table-layout</td>
+                <td>auto/fixed/initial/inherit</td>
+                <td>sets the table layout.</td>
+                <td>auto</td>
+            </tr>
+            <tr>
+                <td>width</td>
+                <td>percent/px/auto</td>
+                <td>table width</td>
+                <td>100%</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-text'>mj-text</h2>
+    <p>This tag allows you to display text and HTML in your email.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-section&gt;</span>
+      <span class="nt">&lt;mj-column&gt;</span>
+        <span class="nt">&lt;mj-text</span> <span class="na">font-family=</span><span class="s">"Helvetica"</span> <span class="na">color=</span><span class="s">"#F45E43"</span><span class="nt">&gt;</span>
+          <span class="nt">&lt;h1&gt;</span>Title<span class="nt">&lt;/h1&gt;</span>
+
+          <span class="nt">&lt;p&gt;</span>Paragraph<span class="nt">&lt;/p&gt;</span>
+          <span class="nt">&lt;p</span> <span class="na">style=</span><span class="s">"font-family:Comic Sans Ms"</span><span class="nt">&gt;</span>Another paragraph<span class="nt">&lt;/p&gt;</span>
+        <span class="nt">&lt;/mj-text&gt;</span>
+      <span class="nt">&lt;/mj-column&gt;</span>
+    <span class="nt">&lt;/mj-section&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/text">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <aside class="notice">
+        `mj-text` is an "ending tag", which means it can contain HTML code which will be left as it is, so it
+        can contain HTML tags with attributes, but it cannot contain other MJML components. More information
+        about ending tags <a href="#ending-tags">in this section</a>.
+    </aside>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>color</td>
+                <td>color</td>
+                <td>text color</td>
+                <td>#000000</td>
+            </tr>
+            <tr>
+                <td>font-family</td>
+                <td>string</td>
+                <td>font</td>
+                <td>Ubuntu, Helvetica, Arial, sans-serif</td>
+            </tr>
+            <tr>
+                <td>font-size</td>
+                <td>px</td>
+                <td>text size</td>
+                <td>13px</td>
+            </tr>
+            <tr>
+                <td>font-style</td>
+                <td>string</td>
+                <td>normal/italic/oblique</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>font-weight</td>
+                <td>number</td>
+                <td>text thickness</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>line-height</td>
+                <td>px</td>
+                <td>space between the lines</td>
+                <td>1</td>
+            </tr>
+            <tr>
+                <td>letter-spacing</td>
+                <td>px,em</td>
+                <td>letter spacing</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>height</td>
+                <td>px</td>
+                <td>The height of the element</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>text-decoration</td>
+                <td>string</td>
+                <td>underline/overline/line-through/none</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>text-transform</td>
+                <td>string</td>
+                <td>uppercase/lowercase/capitalize</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>align</td>
+                <td>string</td>
+                <td>left/right/center/justify</td>
+                <td>left</td>
+            </tr>
+            <tr>
+                <td>container-background-color</td>
+                <td>color</td>
+                <td>inner element background color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>supports up to 4 parameters</td>
+                <td>10px 25px</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>top offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>bottom offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>left offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>right offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+        </tbody>
+    </table>
+    <h2 id='mj-wrapper'>mj-wrapper</h2>
+    <p style="text-align: center;">
+        <img src="https://static.mailjet.com/mjml-website/documentation/wrapper-example.png" alt="wrapper" />
+    </p>
+
+    <p>Wrapper enables to wrap multiple sections together. It&#39;s especially useful to achieve nested layouts
+        with shared border or background images across sections.</p>
+    <pre class="highlight xml tab-xml"><code><span class="nt">&lt;mjml&gt;</span>
+  <span class="nt">&lt;mj-body&gt;</span>
+    <span class="nt">&lt;mj-wrapper</span> <span class="na">border=</span><span class="s">"1px solid #000000"</span> <span class="na">padding=</span><span class="s">"50px 30px"</span><span class="nt">&gt;</span>
+      <span class="nt">&lt;mj-section</span> <span class="na">border-top=</span><span class="s">"1px solid #aaaaaa"</span> <span class="na">border-left=</span><span class="s">"1px solid #aaaaaa"</span> <span class="na">border-right=</span><span class="s">"1px solid #aaaaaa"</span> <span class="na">padding=</span><span class="s">"20px"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;mj-column&gt;</span>
+          <span class="nt">&lt;mj-image</span> <span class="na">padding=</span><span class="s">"0"</span> <span class="na">src=</span><span class="s">"https://placeholdit.imgix.net/~text?&amp;w=350&amp;h=150"</span> <span class="nt">/&gt;</span>
+        <span class="nt">&lt;/mj-column&gt;</span>
+      <span class="nt">&lt;/mj-section&gt;</span>
+      <span class="nt">&lt;mj-section</span> <span class="na">border-left=</span><span class="s">"1px solid #aaaaaa"</span> <span class="na">border-right=</span><span class="s">"1px solid #aaaaaa"</span> <span class="na">padding=</span><span class="s">"20px"</span> <span class="na">border-bottom=</span><span class="s">"1px solid #aaaaaa"</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;mj-column</span> <span class="na">border=</span><span class="s">"1px solid #dddddd"</span><span class="nt">&gt;</span>
+          <span class="nt">&lt;mj-text</span> <span class="na">padding=</span><span class="s">"20px"</span><span class="nt">&gt;</span> First line of text <span class="nt">&lt;/mj-text&gt;</span>
+          <span class="nt">&lt;mj-divider</span> <span class="na">border-width=</span><span class="s">"1px"</span> <span class="na">border-style=</span><span class="s">"dashed"</span> <span class="na">border-color=</span><span class="s">"lightgrey"</span> <span class="na">padding=</span><span class="s">"0 20px"</span> <span class="nt">/&gt;</span>
+          <span class="nt">&lt;mj-text</span> <span class="na">padding=</span><span class="s">"20px"</span><span class="nt">&gt;</span> Second line of text <span class="nt">&lt;/mj-text&gt;</span>
+        <span class="nt">&lt;/mj-column&gt;</span>
+      <span class="nt">&lt;/mj-section&gt;</span>
+    <span class="nt">&lt;/mj-wrapper&gt;</span>
+  <span class="nt">&lt;/mj-body&gt;</span>
+<span class="nt">&lt;/mjml&gt;</span>
+</code></pre>
+    <p style="text-align: center;">
+        <a href="https://mjml.io/try-it-live/components/wrapper">
+            <img width="100px" src="https://mjml.io/assets/img/svg/TRYITLIVE.svg" alt="try it live" />
+        </a>
+    </p>
+
+    <p>The <code>full-width</code> property will be used to manage the background width.
+        By default, it will be 600px. With the <code>full-width</code> property on, it will be
+        changed to 100%.</p>
+
+    <aside class="notice">
+        You can't nest a full-width section inside a full-width wrapper, section will act as a non-full-width
+        section.
+    </aside>
+
+    <aside class="notice">
+        If you're using a background-url on a `mj-wrapper` then do not add one into a section within the
+        mj-wrapper. Outlook Desktop doesn't support nested VML, so it will most likely break your email.
+        Also, if you use a background-color on mj-wrapper and a background-url on its section/hero child, the
+        background-color will be over the background-image on Outlook desktop. There is no way to keep the vml
+        image under the content and over the wrapper's background-color due to z-index being ignored on most
+        tags.
+    </aside>
+
+    <table>
+        <thead>
+            <tr>
+                <th>attribute</th>
+                <th>unit</th>
+                <th>description</th>
+                <th>default value</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>background-color</td>
+                <td>color</td>
+                <td>section color</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>background-position</td>
+                <td>percent / &#39;left&#39;,&#39;top&#39;,... (2 values max)</td>
+                <td>css background position (see outlook limitations in mj-section doc)</td>
+                <td>top center</td>
+            </tr>
+            <tr>
+                <td>background-position-x</td>
+                <td>percent / keyword</td>
+                <td>css background position x</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>background-position-y</td>
+                <td>percent / keyword</td>
+                <td>css background position y</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>background-repeat</td>
+                <td>string</td>
+                <td>css background repeat</td>
+                <td>repeat</td>
+            </tr>
+            <tr>
+                <td>background-size</td>
+                <td>px/percent/&#39;cover&#39;/&#39;contain&#39;</td>
+                <td>css background size</td>
+                <td>auto</td>
+            </tr>
+            <tr>
+                <td>background-url</td>
+                <td>url</td>
+                <td>background url</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>none</td>
+            </tr>
+            <tr>
+                <td>border-bottom</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-left</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-radius</td>
+                <td>px</td>
+                <td>border radius</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-right</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>border-top</td>
+                <td>string</td>
+                <td>css border format</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>css-class</td>
+                <td>string</td>
+                <td>class name, added to the root HTML element created</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>full-width</td>
+                <td>string</td>
+                <td>make the wrapper full-width</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding</td>
+                <td>px</td>
+                <td>supports up to 4 parameters</td>
+                <td>20px 0</td>
+            </tr>
+            <tr>
+                <td>padding-bottom</td>
+                <td>px</td>
+                <td>section bottom offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-left</td>
+                <td>px</td>
+                <td>section left offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-right</td>
+                <td>px</td>
+                <td>section right offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>padding-top</td>
+                <td>px</td>
+                <td>section top offset</td>
+                <td>n/a</td>
+            </tr>
+            <tr>
+                <td>text-align</td>
+                <td>string</td>
+                <td>css text-align</td>
+                <td>center</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+
+</html>
