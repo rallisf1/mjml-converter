@@ -670,6 +670,120 @@ function isRedundantNestedTextWrapper(node: MjmlAstNode, normalizedChildren: Mjm
   return !hasAnyNonEmptyAttribute(node.attributes);
 }
 
+function isHorizontalTableCellNode(node: MjmlAstNode): boolean {
+  if (node.tagName !== "mj-text") {
+    return false;
+  }
+
+  const width = node.attributes?.width;
+  return width !== undefined && width !== null && String(width).trim() !== "";
+}
+
+function hasHorizontalTableRowChildren(node: MjmlAstNode): boolean {
+  let cellCount = 0;
+
+  for (const child of node.children ?? []) {
+    if (isHorizontalTableCellNode(child)) {
+      cellCount += 1;
+      if (cellCount >= 2) {
+        return true;
+      }
+    }
+  }
+
+  return false;
+}
+
+function escapeHtmlText(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function serializeHtmlAttributes(attributes?: MjmlAstNode["attributes"]): string {
+  if (!attributes) {
+    return "";
+  }
+
+  const parts: string[] = [];
+  for (const [key, value] of Object.entries(attributes)) {
+    if (value === undefined || value === null) {
+      continue;
+    }
+
+    const scalar = String(value);
+    if (scalar.trim().length === 0) {
+      continue;
+    }
+
+    parts.push(`${toKebabCaseKey(key)}="${escapeXmlAttribute(scalar)}"`);
+  }
+
+  return parts.length > 0 ? ` ${parts.join(" ")}` : "";
+}
+
+function renderRawHtmlFromMjmlNode(node: MjmlAstNode): string {
+  const renderChildren = (children: MjmlAstNode[]): string => children.map(renderRawHtmlFromMjmlNode).join("");
+  const renderNodeContent = (currentNode: MjmlAstNode): string =>
+    `${currentNode.content ? escapeHtmlText(currentNode.content) : ""}${renderChildren(currentNode.children ?? [])}`;
+
+  if (node.tagName === "mj-raw") {
+    return node.content ?? "";
+  }
+
+  if (node.tagName === "mj-image") {
+    return `<img${serializeHtmlAttributes(node.attributes)} />`;
+  }
+
+  if (node.tagName === "mj-spacer") {
+    const height = node.attributes?.height;
+    const styleSegments: string[] = [];
+    if (typeof height === "number" && height > 0) {
+      styleSegments.push(`height:${height}px`);
+      styleSegments.push(`line-height:${height}px`);
+    } else if (typeof height === "string" && height.trim().length > 0) {
+      styleSegments.push(`height:${height}`);
+      styleSegments.push(`line-height:${height}`);
+    }
+    styleSegments.push("font-size:0");
+
+    const styleAttribute = styleSegments.length > 0 ? ` style="${escapeXmlAttribute(styleSegments.join(";"))}"` : "";
+    return `<div${styleAttribute}>&nbsp;</div>`;
+  }
+
+  if (hasHorizontalTableRowChildren(node)) {
+    const rowAttributes = serializeHtmlAttributes(node.attributes);
+    const cells = (node.children ?? [])
+      .map((child) => {
+        if (isHorizontalTableCellNode(child)) {
+          return `<td${serializeHtmlAttributes(child.attributes)}>${renderNodeContent(child)}</td>`;
+        }
+
+        return `<td>${renderRawHtmlFromMjmlNode(child)}</td>`;
+      })
+      .join("");
+
+    return `<table${rowAttributes}><tbody><tr>${cells}</tr></tbody></table>`;
+  }
+
+  const attributes = serializeHtmlAttributes(node.attributes);
+  const content = renderNodeContent(node);
+  if (!content) {
+    return `<div${attributes}></div>`;
+  }
+
+  return `<div${attributes}>${content}</div>`;
+}
+
+function maybeRenderRawHtmlPreservationNode(node: MjmlAstNode): string | null {
+  if (!hasHorizontalTableRowChildren(node)) {
+    return null;
+  }
+
+  return renderRawHtmlFromMjmlNode(node);
+}
+
 function normalizeTableAttributesForSection(attributes?: MjmlAstNode["attributes"]): MjmlAstNode["attributes"] | undefined {
   if (!attributes) {
     return undefined;
@@ -858,6 +972,16 @@ function normalizeAstNodeForNotifuseHtmlImport(
   parentTagName: string | null,
   isRoot: boolean,
 ): MjmlAstNode[] {
+  const rawHtml = maybeRenderRawHtmlPreservationNode(node);
+  if (rawHtml !== null) {
+    return [
+      {
+        tagName: "mj-raw",
+        content: rawHtml,
+      },
+    ];
+  }
+
   const normalizedChildren = (node.children ?? []).flatMap((child) =>
     normalizeAstNodeForNotifuseHtmlImport(child, node.tagName, false),
   );

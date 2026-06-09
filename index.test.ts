@@ -243,6 +243,8 @@ const notifuseAiAllowedChildrenByParent = new Map<string, Set<string>>([
 const notifuseAiLeafTypes = new Set(["mj-text", "mj-button", "mj-image", "mj-divider", "mj-spacer", "mj-raw", "mj-social-element"]);
 const sampleHtmlPath = new URL("./sample-input.html", import.meta.url);
 const sampleHtml = existsSync(sampleHtmlPath) ? readFileSync(sampleHtmlPath, "utf8") : null;
+const nestedHtmlPath = new URL("./nested-input.html", import.meta.url);
+const nestedHtml = existsSync(nestedHtmlPath) ? readFileSync(nestedHtmlPath, "utf8") : null;
 
 function collectTypes(node: NotifuseMjmlNode, acc: Set<string> = new Set<string>()): Set<string> {
   acc.add(node.type);
@@ -626,6 +628,42 @@ describe("success paths", () => {
     expect(body).toContain("<mj-column");
     expect(body).toContain("Hello");
     expect(body).toContain("World");
+  });
+
+  test("html-to-mjml preserves nested table rows as raw HTML blocks", async () => {
+    if (!nestedHtml) {
+      return;
+    }
+
+    const jsonResponse = await hit("/html-to-mjml", {
+      headers: {
+        authorization: `Bearer ${API_KEY}`,
+        "content-type": "text/html",
+        accept: "application/json",
+      },
+      body: nestedHtml,
+    });
+    const xmlResponse = await hit("/html-to-mjml", {
+      headers: {
+        authorization: `Bearer ${API_KEY}`,
+        "content-type": "text/html",
+        accept: "application/xml",
+      },
+      body: nestedHtml,
+    });
+
+    const jsonBody = (await jsonResponse.json()) as NotifuseMjmlNode;
+    const xmlBody = await xmlResponse.text();
+    const rawContents = collectRawContents(jsonBody);
+
+    expect(jsonResponse.status).toBe(200);
+    expect(xmlResponse.status).toBe(200);
+    expect(rawContents.length).toBeGreaterThan(0);
+    expect(rawContents.some((content) => content.includes("l0-c0") && content.includes("l0-c1"))).toBe(true);
+    expect(xmlBody).toContain("<mj-raw>");
+    expect(xmlBody).toContain("l0-c0");
+    expect(xmlBody).toContain("l0-c1");
+    assertNotifuseAiCompatibility(jsonBody);
   });
 
   test("html-to-mjml strips Outlook raw blocks from converted email HTML", async () => {
